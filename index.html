@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>땡큐 가평! 자라섬 캠핑스쿨 공식 투어·맛집 리플릿</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Fonts: Pretendard (가독성 최강 UI 폰트) & Jua (초등학생 친화 포인트 폰트) -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --tq-orange: #f06a1a;
+            --tq-orange-dark: #d4550a;
+            --tq-orange-light: #fff4ed;
+            --tq-bg: #f7f5f2;
+        }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #ede8e3;
+            word-break: keep-all;
+            overflow-wrap: break-word;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .title-font {
+            font-family: 'Jua', sans-serif;
+        }
+        /* Hide scrollbars for horizontal menus */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Smooth card animation */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card-anim {
+            animation: slideUp 0.22s ease-out forwards;
+        }
+        /* Active Tab Styling (ThankQ Camping Official Orange Style) */
+        .top-tab.active {
+            color: #f06a1a;
+            border-bottom: 3px solid #f06a1a;
+            font-weight: 800;
+        }
+        .sub-chip.active {
+            background-color: #f06a1a;
+            color: #ffffff;
+            border-color: #f06a1a;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(240, 106, 26, 0.28);
+        }
+        .toc-pill.active {
+            background-color: #f06a1a;
+            color: #ffffff;
+            border-color: #f06a1a;
+        }
+        .bot-nav-btn.active {
+            color: #f06a1a;
+            font-weight: 800;
+        }
+    </style>
+</head>
+<body class="flex justify-center min-h-screen sm:py-4">
+
+    <!-- Mobile Online Leaflet Container (땡큐캠핑 오렌지 브랜드 리플릿 프레임) -->
+    <div class="w-full max-w-[480px] bg-[#f7f5f2] sm:rounded-[28px] sm:shadow-2xl overflow-hidden flex flex-col relative sm:border-[6px] sm:border-white min-h-screen sm:min-h-0 sm:h-[92vh]">
+
+        <!-- 1. Top Leaflet Header (검색창 제거 & 땡큐캠핑 Q 로고 오렌지 스타일) -->
+        <header class="bg-[#f06a1a] text-white px-4 py-3 sticky top-0 z-30 shadow-sm">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                    <!-- ThankQ Camping Signature Q-Tent Logo SVG -->
+                    <div class="w-9 h-9 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center flex-shrink-0 shadow-xs">
+                        <svg viewBox="0 0 40 40" class="w-6 h-6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="19" cy="19" r="12" stroke="white" stroke-width="4.2"/>
+                            <path d="M13.5 24.5L19 16.5L24.5 24.5H13.5Z" fill="white"/>
+                            <path d="M24 24L32 31.5" stroke="white" stroke-width="4.5" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="title-font text-[17px] tracking-tight text-white">가평 관광·먹거리 안내서</span>
+                            <span class="bg-white text-[#f06a1a] text-[10px] font-extrabold px-1.5 py-0.5 rounded">캠핑스쿨</span>
+                        </div>
+                        <p class="text-[11px] text-orange-100 font-medium leading-none mt-0.5">자라섬 캠핑스쿨과 함께하는 가평 여행 가이드</p>
+                    </div>
+                </div>
+                <button onclick="openScheduleModal()" class="bg-white/20 hover:bg-white/30 border border-white/40 text-white px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition flex-shrink-0">
+                    11.7~8 일정
+                </button>
+            </div>
+        </header>
+
+        <!-- 2. Sticky Category Tab Bar (아이콘 없이 깔끔한 리플릿 카테고리 구성 / 대표맛집 옆 캠핑장 배치) -->
+        <nav class="bg-white border-b border-orange-100 px-2 flex overflow-x-auto no-scrollbar sticky top-[60px] z-20 flex-shrink-0">
+            <button onclick="selectCategory('all')" id="tab-all" class="top-tab active px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                전체(93)
+            </button>
+            <button onclick="selectCategory('eight')" id="tab-eight" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                가평 8경(8)
+            </button>
+            <button onclick="selectCategory('food')" id="tab-food" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                대표 맛집(16)
+            </button>
+            <button onclick="selectCategory('camp')" id="tab-camp" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                캠핑장(18)
+            </button>
+            <button onclick="selectCategory('tour')" id="tab-tour" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                관광·문화(18)
+            </button>
+            <button onclick="selectCategory('valley')" id="tab-valley" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                가평 계곡(11)
+            </button>
+            <button onclick="selectCategory('nature')" id="tab-nature" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                명산·휴양림(13)
+            </button>
+            <button onclick="selectCategory('exp')" id="tab-exp" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
+                체험·정보(9)
+            </button>
+        </nav>
+
+        <!-- 3. Scrollable Main Leaflet Content -->
+        <main id="mainScroll" class="flex-grow overflow-y-auto pb-20">
+
+            <!-- Leaflet Cover & Clean Category Index (참고 리플릿 디자인 감성 반영: 캐릭터 거북이 배지 & 미션 스탬프 스타일) -->
+            <section id="heroSection" class="p-3.5 pb-1">
+                <!-- Leaflet Cover Card (땡큐캠핑 오렌지 & 그린 배지 포인트) -->
+                <div class="bg-gradient-to-br from-[#1b4d3e] to-[#113329] rounded-2xl p-4 text-white shadow-md mb-3 relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none"></div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="bg-[#f06a1a] text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-xs">
+                            제1회 자라섬 캠핑스쿨 (2026 캠핑 아카데미)
+                        </span>
+                        <div class="flex items-center gap-1 bg-white/15 px-2 py-0.5 rounded-full text-[10px]">
+                            <span>🐢 캠핑스쿨 공식 안내서</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div>
+                            <h2 class="title-font text-xl sm:text-2xl leading-tight text-amber-200">
+                                설레는 캠핑 그 후,<br>가평 어디까지 가봤니?
+                            </h2>
+                            <p class="text-[11px] text-emerald-100 mt-1 leading-relaxed">
+                                <b>11월 7일(토) ~ 8일(일) 1박 2일</b> 자라섬 캠핑스쿨 퇴소 후 가족과 함께 즐기는 가평 맛집 · 명소 큐레이션!
+                            </p>
+                        </div>
+                        <div class="w-16 h-16 bg-white/10 rounded-2xl border border-white/20 flex items-center justify-center flex-shrink-0 text-3xl shadow-inner">
+                            🐢
+                        </div>
+                    </div>
+                    <!-- Mission Stamp Quick Bar -->
+                    <div class="mt-3 pt-3 border-t border-white/15 grid grid-cols-4 gap-1 text-center">
+                        <div class="bg-white/10 rounded-xl p-1.5">
+                            <span class="block text-[10px] text-amber-300 font-bold">01</span>
+                            <span class="text-[10px] text-white">텐트피칭</span>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-1.5">
+                            <span class="block text-[10px] text-amber-300 font-bold">02</span>
+                            <span class="text-[10px] text-white">안전교육</span>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-1.5">
+                            <span class="block text-[10px] text-amber-300 font-bold">03</span>
+                            <span class="text-[10px] text-white">바비큐</span>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-1.5">
+                            <span class="block text-[10px] text-amber-300 font-bold">04</span>
+                            <span class="text-[10px] text-white">클린철수</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clean Text-Only Leaflet Category Directory (아이콘 없는 깔끔한 리플릿 목차 버튼) -->
+                <div class="bg-white rounded-2xl p-3.5 shadow-xs border border-orange-100 mb-2">
+                    <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-gray-100">
+                        <span class="text-xs font-extrabold text-gray-800">리플릿 카테고리 바로가기</span>
+                        <span class="text-[11px] text-[#f06a1a] font-bold">원하는 주제를 눌러보세요</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5 text-left">
+                        <button onclick="selectCategory('eight')" class="px-3 py-2 rounded-xl bg-[#fff6f0] hover:bg-[#ffeadb] border border-orange-200/70 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">가평 8경</span>
+                            <span class="text-[11px] font-extrabold text-[#f06a1a]">8곳</span>
+                        </button>
+                        <button onclick="selectCategory('food')" class="px-3 py-2 rounded-xl bg-[#fff6f0] hover:bg-[#ffeadb] border border-orange-200/70 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">대표 맛집 & 카페</span>
+                            <span class="text-[11px] font-extrabold text-[#f06a1a]">16곳</span>
+                        </button>
+                        <button onclick="selectCategory('camp')" class="px-3 py-2 rounded-xl bg-[#fff6f0] hover:bg-[#ffeadb] border border-orange-200/70 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">땡큐캠핑 캠핑장</span>
+                            <span class="text-[11px] font-extrabold text-[#f06a1a]">추천 18곳</span>
+                        </button>
+                        <button onclick="selectCategory('tour')" class="px-3 py-2 rounded-xl bg-gray-50 hover:bg-orange-50 border border-gray-200/80 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">관광 · 문화</span>
+                            <span class="text-[11px] font-bold text-gray-500">18곳</span>
+                        </button>
+                        <button onclick="selectCategory('valley')" class="px-3 py-2 rounded-xl bg-gray-50 hover:bg-orange-50 border border-gray-200/80 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">가평 계곡</span>
+                            <span class="text-[11px] font-bold text-gray-500">11곳</span>
+                        </button>
+                        <button onclick="selectCategory('nature')" class="px-3 py-2 rounded-xl bg-gray-50 hover:bg-orange-50 border border-gray-200/80 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">명산 · 휴양림</span>
+                            <span class="text-[11px] font-bold text-gray-500">13곳</span>
+                        </button>
+                        <button onclick="selectCategory('exp')" class="col-span-2 px-3 py-2 rounded-xl bg-gray-50 hover:bg-orange-50 border border-gray-200/80 flex items-center justify-between transition">
+                            <span class="text-xs font-bold text-gray-800">체험 · 축제 · 가평 교통/관광정보</span>
+                            <span class="text-[11px] font-bold text-gray-500">9곳</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Category Section Header & Sub-filter Chips -->
+            <section class="px-3.5 pt-1 pb-2">
+                <div id="categoryHeaderBox" class="bg-white rounded-2xl p-3.5 border border-orange-100 shadow-xs mb-2 flex items-center justify-between gap-2">
+                    <div class="border-l-4 border-[#f06a1a] pl-2.5">
+                        <h3 id="catTitleText" class="font-extrabold text-gray-900 text-sm">가평 공식 리플릿 전체보기</h3>
+                        <p id="catDescText" class="text-[11px] text-gray-500 mt-0.5">공식 목차 명소 + 대표 맛집 + 땡큐캠핑 추천 캠핑장</p>
+                    </div>
+                    <span id="resultCountBadge" class="bg-[#fff4ed] text-[#d4550a] border border-orange-200 text-xs font-extrabold px-2.5 py-1 rounded-full flex-shrink-0">총 93곳</span>
+                </div>
+
+                <!-- Reference Image Notice Banner (참고 이미지 안내 문구) -->
+                <div class="bg-amber-50/90 border border-amber-200/90 rounded-xl px-3 py-2 mb-2.5 text-[11px] text-amber-900 leading-snug">
+                    <b>사진 안내 :</b> 본 리플릿의 모든 사진은 이해를 돕기 위한 <b>참고 이미지</b>이며, 실제 현장 모습 및 계절 풍경과 다를 수 있습니다.
+                </div>
+
+                <!-- Dynamic Sub-filter Chips -->
+                <div id="subFilterContainer" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+            </section>
+
+            <!-- Cards List Container -->
+            <section id="cardsContainer" class="px-3.5 space-y-3"></section>
+
+        </main>
+
+        <!-- 4. Bottom Fixed Category Bar (텍스트 중심의 깔끔한 하단 리플릿 이동바) -->
+        <footer class="bg-white/95 backdrop-blur-md border-t border-gray-200 px-2 py-2.5 flex items-center justify-around fixed sm:absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+            <button onclick="selectCategory('all')" id="bot-all" class="bot-nav-btn active text-xs text-gray-500 py-1 px-2">
+                전체목차
+            </button>
+            <button onclick="selectCategory('eight')" id="bot-eight" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
+                가평8경
+            </button>
+            <button onclick="selectCategory('food')" id="bot-food" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
+                대표맛집
+            </button>
+            <button onclick="selectCategory('camp')" id="bot-camp" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
+                캠핑장
+            </button>
+            <button onclick="selectCategory('tour')" id="bot-tour" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
+                관광·자연
+            </button>
+        </footer>
+
+        <!-- 5. Place Detail Modal (카드 클릭 시 크게 보는 리플릿 상세 팝업) -->
+        <div id="detailModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <div class="bg-white w-full max-w-[450px] rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col card-anim">
+                <div class="relative h-52 bg-gray-200 flex-shrink-0">
+                    <img id="modalImg" src="" alt="" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent"></div>
+                    <span class="absolute top-3.5 left-3.5 bg-black/55 text-white/95 text-[10px] px-2 py-0.5 rounded-md">
+                        * 참고 이미지 (실제 사진과 다를 수 있음)
+                    </span>
+                    <button onclick="closeDetailModal()" class="absolute top-3 right-3.5 w-8 h-8 rounded-full bg-black/55 text-white flex items-center justify-center hover:bg-black/75 transition text-sm font-bold">
+                        ✕
+                    </button>
+                    <div class="absolute bottom-3.5 left-4 right-4 text-white">
+                        <span id="modalBadge" class="inline-block bg-[#f06a1a] text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-1"></span>
+                        <h3 id="modalTitle" class="title-font text-2xl leading-tight"></h3>
+                    </div>
+                </div>
+                <div class="p-4 overflow-y-auto space-y-3.5">
+                    <p id="modalSummary" class="text-sm text-gray-700 leading-relaxed font-medium"></p>
+                    
+                    <div class="bg-[#fff6f0] border border-orange-200 rounded-2xl p-3">
+                        <p class="text-xs font-extrabold text-[#d4550a] mb-1">
+                            알아두면 좋은 이용 · 관광 포인트
+                        </p>
+                        <p id="modalTip" class="text-xs text-gray-800 leading-relaxed"></p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-2xl p-3 space-y-2 border border-gray-200 text-xs">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="text-gray-700">
+                                <span class="font-extrabold text-[#f06a1a] mr-1">주소</span>
+                                <span id="modalAddr" class="font-medium"></span>
+                            </div>
+                            <button id="modalCopyBtn" class="flex-shrink-0 bg-white border border-gray-300 text-gray-700 px-2 py-1 rounded-lg text-[11px] font-bold hover:bg-gray-100">
+                                주소복사
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-gray-200/70">
+                            <div class="text-gray-700">
+                                <span class="font-extrabold text-[#f06a1a] mr-1">전화</span>
+                                <span id="modalTel" class="font-bold"></span>
+                            </div>
+                            <a id="modalCallLink" href="#" class="bg-[#f06a1a] text-white px-3 py-1 rounded-lg text-[11px] font-bold">
+                                바로 전화걸기
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Direct Map & Official Info Links -->
+                    <div>
+                        <p class="text-[11px] font-bold text-gray-500 mb-2">길찾기 및 상세 안내 바로가기</p>
+                        <div class="grid grid-cols-2 gap-2" id="modalLinksGrid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Camping School Schedule Modal (11월 7일~8일 일정 안내 팝업) -->
+        <div id="scheduleModal" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div class="bg-white w-full max-w-[400px] rounded-3xl overflow-hidden shadow-2xl card-anim">
+                <div class="bg-[#f06a1a] p-4 text-white flex items-center justify-between">
+                    <div>
+                        <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full font-bold">자라섬 캠핑장 캠핑스쿨</span>
+                        <h3 class="title-font text-lg mt-0.5">11.7(토) ~ 11.8(일) 1박 2일 일정</h3>
+                    </div>
+                    <button onclick="closeScheduleModal()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white font-bold">
+                        ✕
+                    </button>
+                </div>
+                <div class="p-4 space-y-3 text-xs text-gray-700">
+                    <div class="bg-[#fff6f0] border border-orange-200 rounded-2xl p-3">
+                        <span class="font-extrabold text-[#d4550a] block mb-1">1일차 : 11월 7일 (토요일)</span>
+                        <p class="leading-relaxed">• 자라섬 캠핑장 입소 및 캠핑스쿨 프로그램 참여<br>• 가족 저녁 식사 및 가을밤 캠핑 힐링 시간</p>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3">
+                        <span class="font-extrabold text-amber-900 block mb-1">2일차 : 11월 8일 (일요일)</span>
+                        <p class="leading-relaxed">• 아침 식사 및 텐트 정리 후 퇴소<br>• <b>리플릿에서 맛집 & 관광지 골라 가평 가족 나들이!</b></p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3 text-[11px] text-gray-600 leading-relaxed">
+                        <b>동선 팁 :</b> 자라섬 캠핑장에서 차로 5~10분 거리에 남이섬, 레일바이크, 짚와이어, 닭갈비·막국수 맛집들이 모여 있어 퇴소 후 가족 여행 동선으로 아주 편리합니다.
+                    </div>
+                    <button onclick="closeScheduleModal()" class="w-full bg-[#f06a1a] text-white font-bold py-2.5 rounded-xl text-xs">닫기</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Custom Toast Notification -->
+        <div id="toastBox" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-gray-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg">
+            <span id="toastMsg">주소가 복사되었습니다!</span>
+        </div>
+
+    </div>
+
+    <script>
+        // Representative Thematic High-Resolution Images Pool (Verified Unsplash IDs + Fallback)
+        const IMG = {
+            lake: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
+            lake2: "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=600&q=80",
+            waterfall: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?auto=format&fit=crop&w=600&q=80",
+            autumn: "https://images.unsplash.com/photo-1507783548227-544c3b8fc065?auto=format&fit=crop&w=600&q=80",
+            valley: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=600&q=80",
+            valley2: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=600&q=80",
+            pine: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=600&q=80",
+            mountain: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=600&q=80",
+            mountain2: "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?auto=format&fit=crop&w=600&q=80",
+            flower: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80",
+            garden: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=600&q=80",
+            butterfly: "https://images.unsplash.com/photo-1452570053594-1b985d6ea890?auto=format&fit=crop&w=600&q=80",
+            sled: "https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=600&q=80",
+            rail: "https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=600&q=80",
+            waterpark: "https://images.unsplash.com/photo-1582653291997-079a1c04e5a1?auto=format&fit=crop&w=600&q=80",
+            zipline: "https://images.unsplash.com/photo-1533130061792-64b345e4a833?auto=format&fit=crop&w=600&q=80",
+            swiss: "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=600&q=80",
+            europe: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=600&q=80",
+            museum: "https://images.unsplash.com/photo-1554907984-15263bfd63bd?auto=format&fit=crop&w=600&q=80",
+            tradition: "https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=600&q=80",
+            camp: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=600&q=80",
+            camp2: "https://images.unsplash.com/photo-1523987355523-c7b5b0dd90a7?auto=format&fit=crop&w=600&q=80",
+            camp3: "https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?auto=format&fit=crop&w=600&q=80",
+            glamping: "https://images.unsplash.com/photo-1537905569824-f89f14cceb68?auto=format&fit=crop&w=600&q=80",
+            caravan: "https://images.unsplash.com/photo-1527786356703-4b100091cd2c?auto=format&fit=crop&w=600&q=80",
+            forestCamp: "https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=600&q=80",
+            stars: "https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=600&q=80",
+            festival: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80",
+            bus: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=600&q=80",
+            // Food & Cafe Thematic Photos
+            dakgalbi: "https://images.unsplash.com/photo-1635363638580-c2809d049eee?auto=format&fit=crop&w=600&q=80",
+            bbq: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=600&q=80",
+            noodle: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
+            tofu: "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
+            beef: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80",
+            stew: "https://images.unsplash.com/photo-1583032015879-e5022cb87c3b?auto=format&fit=crop&w=600&q=80",
+            cafe: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80",
+            bakery: "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=600&q=80",
+            market: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80"
+        };
+
+        // Category Metadata (아이콘 없이 정돈된 리플릿 제목 구성 + 대표맛집 옆 땡큐캠핑 캠핑장 배치)
+        const CATEGORY_META = {
+            all: { title: "가평 관광 · 맛집 · 캠핑장 전체 (93곳)", desc: "공식 관광목차 59곳 + 대표맛집 16곳 + 추천캠핑장 18곳", subs: ["전체"] },
+            eight: { title: "가평 8경 (제1경~제8경)", desc: "가평에서 꼭 가봐야 할 가장 아름다운 대표 절경 8곳", subs: ["전체", "호수·강변", "단풍·숲길", "폭포·계곡"] },
+            food: { title: "가평 대표 맛집 & 카페 (16곳)", desc: "네이버 평점순 · 자라섬 초근접 (닭갈비 비율 조절 & 카페·베이커리 강화)", subs: ["전체", "리버뷰카페·베이커리", "한식·보양·고기", "닭갈비·막국수"] },
+            camp: { title: "땡큐캠핑 가평 추천 캠핑장 (18곳)", desc: "땡큐캠핑에서 만나는 가평 인기 캠핑장 (방문 시 랜덤 순서 노출)", subs: ["전체", "계곡·숲속힐링", "키즈·액티비티", "글램핑·카라반"] },
+            tour: { title: "가평 관광 · 문화 · 레저 (18곳)", desc: "자라섬·남이섬·수목원·액티비티·미술관 안내", subs: ["전체", "정원·자연섬", "테마파크·레저", "미술관·박물관"] },
+            valley: { title: "가평 청정 계곡 (11곳)", desc: "유리알처럼 맑고 깨끗한 가평 대표 산책·물놀이 계곡", subs: ["전체", "북면·가평읍", "설악·청평·상면"] },
+            nature: { title: "명산 · 자연휴양림 · 공영캠핑 (13곳)", desc: "피톤치드 가득한 가평의 명산과 삼림욕 자연휴양림", subs: ["전체", "명산·공원", "자연휴양림", "대표캠핑·유원지"] },
+            exp: { title: "체험 · 축제 · 가평 알짜정보 (9곳)", desc: "농촌체험, 별자리 천문대, 특산품, 순환버스 안내", subs: ["전체", "체험·천문대", "축제·문화·특산품", "교통·안내정보"] }
+        };
+
+        // Complete 93 Places Dataset (TOC 59 + Food 16 with Balanced Cafe/Bakery & Rating/Proximity Order + ThankQ Campsites 18)
+        let PLACES = [
+            // ================= 1. 가평 8경 (8곳) =================
+            { id: 1, cat: "eight", sub: "호수·강변", badge: "가평 제1경", name: "청평호반", summary: "북한강을 막아 만든 맑고 넓은 호수! 물안개와 수상레저, 호반 드라이브 코스로 최고예요.", tip: "호숫가 드라이브 길을 따라 달리며 유람선이나 보트가 물살을 가르는 모습을 구경해요!", addr: "경기 가평군 청평면 호명리 일원", tel: "031-580-2061", img: IMG.lake },
+            { id: 2, cat: "eight", sub: "호수·강변", badge: "가평 제2경", name: "호명호수", summary: "백두산 천지를 닮은 우리나라 최초의 양수발전소 산꼭대기 호수예요.", tip: "노선버스를 타고 산 정상까지 편하게 올라가 호수 둘레길을 산책하며 전망대에 올라보세요!", addr: "경기 가평군 청평면 상지로 370", tel: "031-580-2061", img: IMG.lake2 },
+            { id: 3, cat: "eight", sub: "폭포·계곡", badge: "가평 제3경", name: "용추구곡 (용추폭포)", summary: "용이 하늘로 날아오른 전설이 깃든 9개의 굽이진 계곡과 시원한 용추폭포!", tip: "입구에서 용추폭포까지 평탄한 데크길이 잘 되어 있어 아이들과 함께 15분이면 편하게 걸어가요.", addr: "경기 가평군 가평읍 용추로 238", tel: "031-8078-8062", img: IMG.waterfall },
+            { id: 4, cat: "eight", sub: "단풍·숲길", badge: "가평 제4경", name: "명지단풍 (명지산)", summary: "11월 초 가을 산 전체가 빨갛고 노랗게 불타오르는 가평 최고의 단풍 명소예요.", tip: "가파른 정상 대신 입구 명지폭포와 하늘다리까지만 가볍게 걸어도 황홀한 가을 풍경을 볼 수 있어요!", addr: "경기 가평군 북면 도대리 일원", tel: "031-582-0108", img: IMG.autumn },
+            { id: 5, cat: "eight", sub: "폭포·계곡", badge: "가평 제5경", name: "적목용소 (용소폭포)", summary: "바닥이 다 보일 만큼 에메랄드빛으로 맑고 신비로운 계곡 연못과 폭포예요.", tip: "도마치계곡 상류의 깨끗한 자연 속에서 전설 속 이무기 이야기를 나누며 기념사진을 찍어보세요!", addr: "경기 가평군 북면 적목리 일원", tel: "031-580-2061", img: IMG.valley },
+            { id: 6, cat: "eight", sub: "단풍·숲길", badge: "가평 제6경", name: "운악망경 (운악산 출렁다리)", summary: "구름을 뚫고 솟은 기암괴석과 아찔한 210m 길이의 출렁다리가 있는 절경!", tip: "운악산 중턱 출렁다리에서 발아래 단풍 숲을 내려다보며 짜릿한 풍경을 만끽해 보세요!", addr: "경기 가평군 조종면 운악청계로 589", tel: "031-585-7155", img: IMG.mountain },
+            { id: 7, cat: "eight", sub: "단풍·숲길", badge: "가평 제7경", name: "축령백림 (잣나무숲)", summary: "100년 가까이 자란 아름드리 잣나무 수만 그루가 하늘을 가린 초록빛 힐링 숲!", tip: "잣나무 숲길을 걸으며 솔방울보다 큰 잣송이를 찾아보고 상쾌한 피톤치드를 깊게 마셔봐요.", addr: "경기 가평군 상면 축령로 289-146", tel: "031-8008-6769", img: IMG.pine },
+            { id: 8, cat: "eight", sub: "폭포·계곡", badge: "가평 제8경", name: "유명농계 (유명산계곡)", summary: "기암괴석 사이로 박쥐소·용소·마당소 등 맑은 연못이 끝없이 이어지는 비경!", tip: "유명산 자연휴양림 산책로와 연결되어 있어 숲 해설판의 나무 이름을 살펴보며 걷기 좋아요.", addr: "경기 가평군 설악면 가일리 산 35", tel: "031-589-5487", img: IMG.valley2 },
+
+            // ================= 2. 가평 대표 맛집 & 카페 (16곳 - 카페/베이커리 강화 및 평점·접근성순 정렬) =================
+            { id: 22, cat: "food", sub: "리버뷰카페·베이커리", badge: "★4.9 · 자라섬 5분", name: "골든트리 카페", summary: "웅장한 건축미와 통유리창 너머 북한강 파노라마 뷰! 고소한 가평 잣 라떼와 베이커리 명소.", tip: "강변 잔디 정원에서 여유로운 북한강 물멍과 향긋한 가평 잣 시그니처 음료를 즐겨보세요!", addr: "경기 가평군 가평읍 북한강변로 326-124", tel: "0507-1388-9872", img: IMG.cafe },
+            { id: 23, cat: "food", sub: "리버뷰카페·베이커리", badge: "★4.8 · 루프탑 뷰맛집", name: "리버레인 카페", summary: "전 층에서 반짝이는 북한강이 내려다보이는 대형 베이커리 카페! 당일 구운 소금빵·케이크 인기.", tip: "엘리베이터가 있어 이동이 편하고 루프탑 포토존에서 남기는 북한강 배경 사진이 멋져요!", addr: "경기 가평군 청평면 북한강로 2141", tel: "031-584-5333", img: IMG.bakery },
+            { id: 93, cat: "food", sub: "리버뷰카페·베이커리", badge: "★4.8 · 신상 대형베이커리", name: "아우어 베이커리 가평점", summary: "감각적인 인테리어와 더티초코, 앙버터 등 프리미엄 베이커리와 향긋한 스페셜티 커피가 가득!", tip: "북한강 드라이브 코스 중 들러 예쁜 포토존에서 인증샷을 남기고 맛있는 빵을 포장하기 좋아요.", addr: "경기 가평군 가평읍 북한강변로 326", tel: "031-582-7278", img: IMG.cafe },
+            { id: 94, cat: "food", sub: "리버뷰카페·베이커리", badge: "★4.7 · 가평잣 디저트", name: "카페 코지 가평", summary: "고소한 잣 크림 라떼와 잣 타르트, 수제 젤라또를 맛볼 수 있는 아늑하고 예쁜 감성 카페.", tip: "자라섬 캠핑장에서 차로 3분 거리! 퇴소 후 달콤한 디저트와 커피로 여유를 즐기기 딱 좋아요.", addr: "경기 가평군 가평읍 호반로 42", tel: "031-581-2255", img: IMG.bakery },
+            { id: 11, cat: "food", sub: "한식·보양·고기", badge: "★4.8 · 원조 잣두부전골", name: "언덕마루 가평잣두부집", summary: "100% 국산 콩에 통통한 가평 잣을 통째로 박아 만든 고소한 잣두부전골 & 두부보쌈 전문점!", tip: "두부 속에 콕콕 박힌 고소한 가평 잣 알갱이의 풍미가 일품! 퇴소 후 아침·점심 식사로 최고예요.", addr: "경기 가평군 상면 수목원로 248", tel: "031-584-5368", img: IMG.tofu },
+            { id: 12, cat: "food", sub: "한식·보양·고기", badge: "★4.8 · 축협 명품한우", name: "가평축협한우명가 본점", summary: "가평축협이 직접 운영하는 믿음직한 명품 한우 구이 & 진한 한우국밥·갈비탕 전문점!", tip: "넓고 쾌적한 주차장과 좌석을 갖추고 있어 캠핑 퇴소 후 뜨끈한 갈비탕 한 그릇 하기에 제격!", addr: "경기 가평군 가평읍 호반로 25", tel: "031-581-1592", img: IMG.beef },
+            { id: 17, cat: "food", sub: "한식·보양·고기", badge: "★4.7 · 수요미식회 방영", name: "동기간", summary: "숲속 아늑한 오두막 독채 방갈로에서 우리 가족끼리 오붓하게 즐기는 토종 닭볶음탕 & 백숙!", tip: "프라이빗한 방갈로 좌석이라 일행끼리 편하게 식사할 수 있고 진한 국물에 칼국수 사리가 일품!", addr: "경기 가평군 가평읍 보납로 459-158", tel: "031-581-5570", img: IMG.stew },
+            { id: 18, cat: "food", sub: "한식·보양·고기", badge: "★4.7 · 전참시 장작불솥뚜껑", name: "산골농원", summary: "참나무 장작불 위 초대형 가마솥 솥뚜껑에서 보글보글 끓여내는 명물 닭볶음탕!", tip: "장작불 타는 풍경부터 볼거리 가득! 마무리로 솥뚜껑에 볶아주는 김치볶음밥은 필수 코스예요.", addr: "경기 가평군 설악면 어비산길99번길 75-7", tel: "031-584-7415", img: IMG.stew },
+            { id: 20, cat: "food", sub: "한식·보양·고기", badge: "★4.7 · 정갈한 평양요리", name: "봉화전", summary: "담백하고 깊은 육수의 어복쟁반, 수제 만두전골, 평양냉면과 바삭한 녹두빈대떡 맛집!", tip: "간이 세지 않고 정갈해 어르신부터 아이들까지 온 가족 외식 메뉴로 만족도가 높아요.", addr: "경기 가평군 가평읍 경춘로 1795", tel: "031-581-5221", img: IMG.tofu },
+            { id: 21, cat: "food", sub: "한식·보양·고기", badge: "★4.6 · 정원 한옥식당", name: "타샤의정원", summary: "동화 속 정원처럼 예쁜 한옥 레스토랑에서 맛보는 정갈한 나물 솥밥과 한돈 제육·불고기 한상!", tip: "식당 앞 아기자기한 정원이 예뻐서 식사 전후로 산책하며 기념사진 찍기에 정말 좋아요.", addr: "경기 가평군 가평읍 북한강변로 326-197", tel: "031-582-7277", img: IMG.garden },
+            { id: 19, cat: "food", sub: "한식·보양·고기", badge: "★4.6 · 자라섬 5분 중식", name: "뚝배기짬뽕패밀리", summary: "음악역1939 바로 앞! 뚝배기에 담겨 끝까지 뜨거운 차돌·전복짬뽕과 바삭한 파쌈탕수육.", tip: "바삭달콤한 탕수육과 진한 짬뽕이 맛있고 식사 후 바로 앞 음악역 잔디광장을 산책하기 좋아요!", addr: "경기 가평군 가평읍 문화로 131", tel: "031-582-9255", img: IMG.noodle },
+            { id: 24, cat: "food", sub: "리버뷰카페·베이커리", badge: "★4.6 · 자라섬 3분 시장", name: "가평 잣고을시장 먹거리타운", summary: "가평잣 호두과자, 잣 아이스크림, 수제 닭강정, 메밀전병 등 주전부리가 가득한 전통시장!", tip: "집으로 돌아가는 길에 차 안에서 즐길 따끈한 '가평 잣 호두과자'를 간식으로 챙겨보세요!", addr: "경기 가평군 가평읍 장터2길 12", tel: "031-582-8181", img: IMG.market },
+            { id: 9, cat: "food", sub: "닭갈비·막국수", badge: "★4.7 · 자라섬 5분 춘천", name: "남이섬꼬꼬춘천닭갈비", summary: "철판·숯불 닭갈비를 모두 즐길 수 있고 안 매운 '어린이 닭갈비' 메뉴가 있는 가족 외식 맛집!", tip: "고소한 가평 잣이 듬뿍 올라간 물막국수와 치즈 퐁듀를 곁들이면 남녀노소 모두 좋아해요!", addr: "경기 가평군 가평읍 북한강변로 1046", tel: "031-581-2244", img: IMG.dakgalbi },
+            { id: 10, cat: "food", sub: "닭갈비·막국수", badge: "★4.7 · 식객 선정 노포", name: "송원막국수", summary: "만화 <식객>에도 소개된 가평 읍내 대표 노포! 고소한 간장 양념 비빔막국수와 수육 맛집.", tip: "자라섬 캠핑장에서 차로 5분! 자극적이지 않고 고소한 양념이라 부담 없이 맛있게 즐길 수 있어요.", addr: "경기 가평군 가평읍 가화로 76-1", tel: "031-582-1408", img: IMG.noodle },
+            { id: 15, cat: "food", sub: "닭갈비·막국수", badge: "★4.6 · 잣치즈퐁듀 인기", name: "칠오닭갈비", summary: "참숯에 구워 불향 가득한 소금·양념 닭갈비에 가평 잣 치즈퐁듀를 푹 찍어 먹는 핫플!", tip: "아침고요수목원 가는 길목에 위치! 구워져 나오는 숯불 향기와 늘어나는 치즈가 환상적이에요.", addr: "경기 가평군 상면 수목원로 68", tel: "031-585-7579", img: IMG.bbq },
+            { id: 16, cat: "food", sub: "닭갈비·막국수", badge: "★4.6 · 메밀쌈 닭갈비", name: "금강막국수 숯불닭갈비 본점", summary: "부드러운 메밀전병 쌈에 숯불닭갈비와 무절임을 싸 먹는 별미 중의 별미!", tip: "얇고 쫄깃한 메밀쌈에 숯불닭갈비를 돌돌 말아 색다른 식감으로 즐겨보세요.", addr: "경기 가평군 상면 수목원로 16", tel: "031-584-5669", img: IMG.noodle },
+
+            // ================= 3. 땡큐캠핑 가평 추천 캠핑장 (18곳 - 명돈골 포함 & 랜덤순서 노출) =================
+            { id: 76, cat: "camp", sub: "키즈·액티비티", badge: "땡큐캠핑 인기 · 후기397+", name: "가평 명돈골캠핑장", summary: "계곡 1분 컷 물멍존·숲멍존·타프존·이지캠핑 완비! 사계절 썰매장·실내 키즈존·트램펄린까지 갖춘 가족 캠핑 명소.", tip: "넓은 사이트 간격과 잘 지켜지는 매너타임으로 호평! 계곡 인접 사이트와 대형 타프존, 애견동반 존까지 취향대로 골라보세요.", addr: "경기 가평군 북면 논남기길 19-36", tel: "010-6778-1199", img: IMG.forestCamp, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1614" },
+            { id: 77, cat: "camp", sub: "글램핑·카라반", badge: "땡큐캠핑 인기 · 후기1,009+", name: "자라섬캠핑장 (오토·카라반)", summary: "땡큐캠핑 등록 1호이자 방문후기 1,000건 돌파! 북한강변 잔디광장과 카라반을 갖춘 대한민국 대표 캠핑장.", tip: "이번 캠핑스쿨에서 다 못 둘러본 수변 산책로와 쾌적한 카라반 구역을 다음 가족 여행지로 예약해 보세요!", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8029", img: IMG.camp, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1" },
+            { id: 78, cat: "camp", sub: "글램핑·카라반", badge: "땡큐캠핑 인기 · 후기746+", name: "산장관광지 캠핑장", summary: "조종천 맑은 강물과 울창한 소나무 숲에서 오토캠핑·카라반·펜션을 모두 즐기는 자연 휴양 캠핑장.", tip: "어린이 놀이터와 넓은 잔디밭이 잘 조성되어 있고 아침고요수목원과 묶어 여행하기 아주 좋아요!", addr: "경기 가평군 상면 덕현산장길 71", tel: "031-8078-8052", img: IMG.caravan, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=789" },
+            { id: 79, cat: "camp", sub: "계곡·숲속힐링", badge: "땡큐캠핑 인기 · 후기634+", name: "가평 화랑캠핑장", summary: "시원한 나무 그늘과 맑은 가평천 계곡을 품은 대형 인기 캠핑장! 파쇄석 사이트와 카라반을 함께 운영해요.", tip: "여유로운 두 가족 전용 사이트와 트레일러형 카라반도 갖춰져 있어 지인 가족과 동반 캠핑하기 딱 좋아요!", addr: "경기 가평군 북면 가화로 1073-146", tel: "010-2701-2281", img: IMG.forestCamp, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=3357" },
+            { id: 80, cat: "camp", sub: "계곡·숲속힐링", badge: "고캠핑인증 · 후기374+", name: "가평 무릉도원캠핑장", summary: "아침고요수목원 인근 울창한 숲과 맑은 계곡물 소리가 어우러진 고캠핑 인증 힐링 캠핑장!", tip: "풍성한 나무 그늘과 깨끗한 부대시설이 매력적이며 수목원 나들이 코스와 함께 방문하기 좋아요.", addr: "경기 가평군 상면 임초밤안골로 205", tel: "010-8321-6607", img: IMG.pine, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=2207" },
+            { id: 81, cat: "camp", sub: "계곡·숲속힐링", badge: "청정계곡뷰 · 후기302+", name: "캠핑플레이", summary: "청정 적목리 논남기계곡 바로 옆! 친절한 운영과 탁 트인 마운틴·계곡 뷰로 입소문 난 힐링 스폿.", tip: "강씨봉자연휴양림 인근이라 공기가 무척 상쾌하고 가을 밤하늘에 쏟아지는 별을 감상하기 최고예요!", addr: "경기 가평군 북면 논남기길 468-33", tel: "010-3790-8255", img: IMG.valley, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4022" },
+            { id: 82, cat: "camp", sub: "계곡·숲속힐링", badge: "편백샤워실 · 후기250+", name: "가평사계절캠핑장", summary: "1급수 가평천 바로 앞! 편백나무(히노끼) 개별 샤워실·비데 화장실에 도보권 하나로마트까지 편의성 최고!", tip: "맑은 가평천 여울에서 자연 생태를 관찰하고, 캠핑장 앞 1km 강변 제방길에서 자전거 라이딩을 즐겨보세요!", addr: "경기 가평군 북면 가화로 988", tel: "010-2706-1534", img: IMG.camp2, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1589" },
+            { id: 83, cat: "camp", sub: "키즈·액티비티", badge: "키즈추천 · 후기208+", name: "우리들캠핑장&글램핑", summary: "트램펄린·정글짐·미니골프·잔디운동장까지! 아이들 놀거리가 풍성해 가족 캠퍼 재방문율이 높은 캠핑장.", tip: "몸만 가볍게 떠나는 감성 글램핑동과 놀이터 인근 오토캠핑 사이트 모두 가족 여행객에게 인기가 높아요!", addr: "경기 가평군 북면 화악산로 245", tel: "010-2261-8138", img: IMG.glamping, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=2069" },
+            { id: 84, cat: "camp", sub: "계곡·숲속힐링", badge: "매너타임우수 · 후기184+", name: "가평포시즌캠핑장", summary: "화악산 청정 계곡을 따라 사계절 내내 아름다운 숲 풍경과 깔끔한 시설을 자랑하는 고캠핑 인증 캠핑장.", tip: "조용하고 차분한 매너타임 관리로 밤에 편안하게 휴식하며 불멍을 즐기고 싶은 가족에게 추천해요!", addr: "경기 가평군 북면 화악산로 1039-9", tel: "010-5414-2701", img: IMG.autumn, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1697" },
+            { id: 85, cat: "camp", sub: "키즈·액티비티", badge: "고캠핑인증 · 후기182+", name: "캠프네버랜드", summary: "동화 속 네버랜드처럼 아이들과 반려견이 자연 속에서 여유롭게 머무는 조종면 대표 감성 오토캠핑장!", tip: "땡큐캠핑 지역 숙박 할인 프로모션 단골 참여 캠핑장으로 알뜰하고 깔끔한 캠핑을 즐길 수 있어요.", addr: "경기 가평군 조종면 대보간선로 525-16", tel: "010-7319-1678", img: IMG.camp3, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=17644" },
+            { id: 86, cat: "camp", sub: "키즈·액티비티", badge: "키즈놀이방 · 후기164+", name: "가평은빛물결캠핑장", summary: "실내 놀이방, 트램펄린, 모래놀이장과 얕고 잔잔한 강변 여울까지 갖춘 패밀리 맞춤형 키즈 친화 캠핑장!", tip: "사이트 간격이 넓고 그늘이 풍성해 여유로우며 다양한 어린이 놀이시설 덕분에 가족 만족도가 높아요.", addr: "경기 가평군 조종면 대보리 506-1", tel: "010-6764-5061", img: IMG.camp2, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4084" },
+            { id: 87, cat: "camp", sub: "계곡·숲속힐링", badge: "별빛힐링 · 후기119+", name: "가평 캠핑스마일", summary: "연인산 자락의 맑은 공기와 여유로운 파쇄석 사이트, 깔끔한 시설 관리로 입소문 난 힐링 캠핑장!", tip: "주변 빛 공해가 적어 맑은 날 밤하늘 별자리가 선명해요! 조용한 숲속 모닥불 힐링 코스로 제격이에요.", addr: "경기 가평군 조종면 연인산로474번길 91-27", tel: "010-8863-0307", img: IMG.camp3, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1964" },
+            { id: 88, cat: "camp", sub: "계곡·숲속힐링", badge: "자라섬인근 · 후기95+", name: "별드림캠핑장", summary: "가평읍·자라섬에서 가까우면서도 산속 고요한 자연과 쏟아지는 밤하늘 별빛을 만끽하는 숲속 캠핑장!", tip: "가평읍 마트와 대표 맛집 접근성이 뛰어나면서도 한적한 산림 캠핑 감성을 동시에 누릴 수 있어요.", addr: "경기 가평군 가평읍 당목가일길 515", tel: "010-5028-6019", img: IMG.stars, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1843" },
+            { id: 89, cat: "camp", sub: "계곡·숲속힐링", badge: "화악천뷰명소 · 후기83+", name: "가평뷰캠핑장", summary: "사이트 바로 눈앞에 투명한 화악천과 병풍 같은 산세가 펼쳐지는 이름 그대로 '전망 맛집' 캠핑장!", tip: "새단장한 쾌적한 화장실·샤워실을 갖추고 있으며 화악천 물소리를 들으며 아침 커피 한 잔 즐기기 좋아요.", addr: "경기 가평군 북면 화악산로 270", tel: "010-9139-1950", img: IMG.valley, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=13572" },
+            { id: 90, cat: "camp", sub: "키즈·액티비티", badge: "고캠핑인증 · 후기82+", name: "프라도 캠핑장", summary: "온수 수영장, 어린이 놀이시설, 아늑한 방갈로까지 골고루 갖추어 사계절 사랑받는 가족형 캠핑장.", tip: "놀이시설과 가까운 사이트 구성이 알차고 방갈로 시설도 함께 있어 편리하게 이용할 수 있어요!", addr: "경기 가평군 북면 화악산로207번길 5-29", tel: "010-5622-8042", img: IMG.forestCamp, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=3585" },
+            { id: 91, cat: "camp", sub: "글램핑·카라반", badge: "캠핑&펜션 · 후기68+", name: "가평 유토피아 힐링캠프", summary: "화악산 상류의 깨끗한 계곡과 오토캠핑·펜션을 함께 운영해 대가족이나 캠핑 입문자도 편하게 머무는 곳.", tip: "텐트 캠핑이 익숙지 않은 일행이나 부모님과 동반할 때 펜션 객실과 함께 예약하기 아주 편리해요!", addr: "경기 가평군 북면 화악산로 1246", tel: "010-5146-6466", img: IMG.valley2, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=20060" },
+            { id: 92, cat: "camp", sub: "계곡·숲속힐링", badge: "안전캠핑인증 · 밤나무숲", name: "가평밤나무숲캠핑장", summary: "30년 넘은 아름드리 밤나무 숲 그늘과 맑은 화악계곡이 만난 가을 감성 명소! 안전캠핑교육 인증 캠핑장.", tip: "울창한 밤나무 아래 파쇄석 사이트에서 바스락거리는 가을 낙엽과 계곡 풍경을 감상하며 힐링해 보세요.", addr: "경기 가평군 북면 화악산로 686-57", tel: "010-4330-8834", img: IMG.autumn, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4248" },
+            { id: 93, cat: "camp", sub: "글램핑·카라반", badge: "별빛마운틴뷰 · 럭셔리글램핑", name: "힐사이드인가평 글램핑&캠핑", summary: "화악산 높은 고도에서 만나는 쏟아지는 별빛과 탁 트인 마운틴뷰! 온돌·개별화장실 글램핑 & 오토캠핑.", tip: "트램펄린과 가까운 오토캠핑 구역은 물론 보일러 온돌과 침대가 완비된 따뜻한 글램핑동이 인기예요!", addr: "경기 가평군 북면 화악지암길 360", tel: "0507-1463-2109", img: IMG.glamping, tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4153" },
+
+            // ================= 4. 가평 관광 · 문화 (18곳 - 네이버 평점 및 자라섬 근접순 정렬) =================
+            { id: 25, cat: "tour", sub: "정원·자연섬", badge: "★4.9 · 자라섬 1분", name: "자라섬 (남도 꽃정원)", summary: "우리가 머문 자라섬! 서도 캠핑장 옆 남도 꽃정원에는 가을 백일홍·핑크뮬리·억새가 한가득!", tip: "퇴소 직후 멀리 갈 필요 없이 도보나 전기자전거로 남도 꽃정원의 억새길 포토존을 산책해요!", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8028", img: IMG.flower },
+            { id: 37, cat: "tour", sub: "정원·자연섬", badge: "★4.8 · 자라섬 5분 필수", name: "남이섬 (나미나라공화국)", summary: "유람선을 타고 들어가는 동화 같은 섬! 노란 은행나무길, 메타세쿼이아길, 청설모·타조가 반겨줘요.", tip: "11월 초 송파은행나무길의 노란 은행잎 길이 장관! 패밀리 자전거와 나눔열차를 타보세요!", addr: "경기 가평군 가평읍 북한강변로 1024 (선착장)", tel: "031-580-8114", img: IMG.autumn },
+            { id: 32, cat: "tour", sub: "테마파크·레저", badge: "★4.8 · 자라섬 5분 레저", name: "가평레일파크 (레일바이크)", summary: "아찔한 높이 30m 북한강 철교 위를 전동 보조 페달로 시원하게 달리는 가평 인기 액티비티!", tip: "전동 모터가 도와줘서 힘들이지 않고 탈 수 있어요! 느티나무 터널과 강 위 철교 구간이 하이라이트!", addr: "경기 가평군 가평읍 장터길 14", tel: "031-582-7788", img: IMG.rail },
+            { id: 34, cat: "tour", sub: "테마파크·레저", badge: "★4.7 · 하늘 나는 스릴", name: "짚와이어 (남이섬·자라섬)", summary: "80m 높이 타워에서 와이어 하나에 매달려 북한강 위를 가르며 남이섬으로 바로 날아가는 스릴!", tip: "배를 기다릴 필요 없이 하늘을 날아 1분 만에 남이섬에 도착해요! (키 140cm 이상 탑승 가능)", addr: "경기 가평군 가평읍 북한강변로 1024", tel: "031-582-8091", img: IMG.zipline },
+            { id: 27, cat: "tour", sub: "정원·자연섬", badge: "★4.7 · 자라섬 안 실내온실", name: "이화원 (나비스토리)", summary: "자라섬 안에 위치한 따뜻한 실내 온실 식물원! 커피나무, 열대식물, 한국 전통 정원을 만나요.", tip: "11월 선선한 아침에도 온실 안은 포근해요! 커피나무 열매와 이색 아열대 식물을 감상해 보세요.", addr: "경기 가평군 가평읍 자라섬로 64", tel: "031-581-0228", img: IMG.butterfly },
+            { id: 29, cat: "tour", sub: "정원·자연섬", badge: "★4.8 · 한국 대표 수목원", name: "아침고요수목원", summary: "30여 개의 아름다운 테마정원과 구름다리, 가을 국화·단풍이 어우러진 대한민국 최고 정원!", tip: "출렁이는 '구름다리'를 건너 하경정원 전망대에서 한반도 모양 꽃밭을 내려다보세요!", addr: "경기 가평군 상면 수목원로 432", tel: "1544-6703", img: IMG.garden },
+            { id: 38, cat: "tour", sub: "테마파크·레저", badge: "★4.7 · 어린왕자 & 피노키오", name: "쁘띠프랑스 (& 이탈리아마을)", summary: "어린왕자 테마 프랑스 마을과 거대 피노키오가 있는 이탈리아 마을을 함께 즐기는 유럽 문화 파크!", tip: "매시간 열리는 마리오네트 인형극과 200년 된 오르골 연주 공연 시간을 맞춰 관람해 보세요!", addr: "경기 가평군 청평면 호반로 1063", tel: "031-584-8200", img: IMG.europe },
+            { id: 36, cat: "tour", sub: "테마파크·레저", badge: "★4.7 · 알프스 스위스마을", name: "에델바이스 스위스테마파크", summary: "알록달록 스위스 전통 건축물과 귀여운 양 떼 먹이주기, 베른 베어 포토존이 있는 테마파크!", tip: "스위스 역 포토존에서 기념사진을 남기고 목장에서 귀여운 양 떼 먹이주기 체험도 즐겨보세요!", addr: "경기 가평군 설악면 다락재로 226-57", tel: "031-585-3359", img: IMG.swiss },
+            { id: 31, cat: "tour", sub: "정원·자연섬", badge: "★4.8 · 잣향기 치유숲", name: "경기도 잣향기푸른숲", summary: "수령 80년 이상의 국내 최대 잣나무 숲! 축령백림관 전시실과 목공 체험장이 있는 산림휴양지.", tip: "누구나 편하게 걸을 수 있는 무장애 데크길과 옛 화전민 마을 재현터를 천천히 둘러보세요!", addr: "경기 가평군 상면 축령로 289-146", tel: "031-8008-6769", img: IMG.pine },
+            { id: 28, cat: "tour", sub: "테마파크·레저", badge: "★4.6 · 사계절 가족썰매", name: "가평사계절썰매장", summary: "무빙워크를 타고 편하게 올라가 시원하게 내려오는 사계절 물썰매·눈썰매·잔디썰매장!", tip: "직접 걸어 올라갈 필요 없이 에스컬레이터(무빙워크)가 있어 편하게 즐길 수 있어요! (시즌 운영 확인)", addr: "경기 가평군 상면 깃대봉길 5-20", tel: "031-8078-8048", img: IMG.sled },
+            { id: 26, cat: "tour", sub: "정원·자연섬", badge: "★4.6 · 하늘 위 산정호수", name: "호명호수공원", summary: "호명산 정상에서 푸른 호수를 따라 자전거와 산책을 즐기는 하늘 위 친환경 생태공원.", tip: "호수 옆 태양광·양수발전 홍보관(에너지 홍보관)에서 친환경 발전 원리도 함께 둘러보세요!", addr: "경기 가평군 청평면 호명리 5", tel: "031-580-2061", img: IMG.lake2 },
+            { id: 30, cat: "tour", sub: "정원·자연섬", badge: "★4.6 · 숲속 생태체험", name: "가평수목원 (자연생태숲)", summary: "칼봉산 자락의 맑은 계곡과 숲속 산책로, 목공예·자연물 체험을 즐길 수 있는 아늑한 수목원.", tip: "복잡하지 않고 조용하게 가을 숲길을 걸으며 여유로운 가족 산책을 즐기기 좋아요.", addr: "경기 가평군 가평읍 경반안로 357-77", tel: "031-582-0960", img: IMG.pine },
+            { id: 33, cat: "tour", sub: "테마파크·레저", badge: "★4.5 · 북면 물놀이 파크", name: "별비치 워터파크", summary: "가평 북면의 깨끗한 자연 산세에 둘러싸여 슬라이드와 유수풀을 즐기는 가족형 워터파크.", tip: "여름 시즌에는 시원한 야외 워터슬라이드가 운영되며, 방문 전 계절 운영 일정을 꼭 확인하세요!", addr: "경기 가평군 북면 먹골로 336", tel: "031-581-4999", img: IMG.waterpark },
+            { id: 35, cat: "tour", sub: "테마파크·레저", badge: "★4.7 · 숲속 8코스 비행", name: "짚라인가평 (브릿지짚라인)", summary: "칼봉산 자연휴양림의 울창한 숲과 계곡 사이를 총 8개 코스 와이어로 날아다니는 산악 어드벤처!", tip: "전문 가이드와 함께 안전 장비를 착용하고 울창한 잣나무 숲 사이를 시원하게 비행해 보세요!", addr: "경기 가평군 가평읍 경반안로 417-11", tel: "031-581-7335", img: IMG.zipline },
+            { id: 39, cat: "tour", sub: "미술관·박물관", badge: "★4.5 · 명지산 자락 예술관", name: "남송미술관", summary: "아름다운 자연 정원과 한국 현대 미술 작품, 조각 공원이 조화를 이루는 고즈넉한 미술관.", tip: "야외 잔디 조각 정원을 산책하며 자연과 어우러진 예술 작품을 여유롭게 감상해 보세요!", addr: "경기 가평군 북면 백둔로 322", tel: "031-581-0772", img: IMG.museum },
+            { id: 40, cat: "tour", sub: "미술관·박물관", badge: "★4.5 · 운악산 인근 갤러리", name: "일지안호범미술관 (일지미술관)", summary: "운악산 인근의 아름다운 자연 속에서 한국화와 서예, 전통 문화 감성을 만나는 예술 공간.", tip: "차분한 분위기에서 한국화의 섬세한 멋을 감상하며 여유로운 문화 산책을 즐겨보세요.", addr: "경기 가평군 조종면 운악청계로 140", tel: "031-585-0180", img: IMG.museum },
+            { id: 41, cat: "tour", sub: "미술관·박물관", badge: "★4.5 · 유명산 자락 갤러리", name: "설미재미술관", summary: "자연과 건축, 현대 조형 예술이 하나가 된 미술관으로 가족 창의 체험 프로그램도 운영하는 곳.", tip: "미술관 야외 정원의 독특한 현대 조형물 사이를 걸으며 예술적 영감을 얻어보세요!", addr: "경기 가평군 설악면 유명로 1454-38", tel: "031-585-6276", img: IMG.museum },
+            { id: 42, cat: "tour", sub: "미술관·박물관", badge: "★4.4 · 전통 농경 문화 체험", name: "현암농경유물박물관", summary: "옛 조상들이 농사짓고 생활하던 쟁기, 탈곡기, 맷돌 등 전통 농경 유물이 가득한 박물관!", tip: "우리 전통 농기구 실물을 직접 살펴보며 아이들과 옛 생활 문화를 이야기 나누기 좋아요!", addr: "경기 가평군 북면 석장모루길 13", tel: "031-581-0612", img: IMG.tradition },
+
+            // ================= 5. 가평 계곡 (11곳) =================
+            { id: 43, cat: "valley", sub: "북면·가평읍", badge: "28km 최장 청정계곡", name: "명지계곡", summary: "명지산과 화악산에서 내려오는 수량이 풍부하고 물이 수정처럼 맑은 가평 대표 계곡!", tip: "계곡 입구 산책로를 따라 걸으며 가을 단풍과 어우러진 맑은 물빛을 감상해요.", addr: "경기 가평군 북면 도대리 일원", tel: "031-580-2481", img: IMG.valley },
+            { id: 44, cat: "valley", sub: "북면·가평읍", badge: "연인산 자락 맑은물", name: "백둔계곡", summary: "연인산 기슭의 넓고 하얀 바위들과 깨끗한 물줄기가 어우러진 조용한 가족 힐링 계곡.", tip: "물살이 완만하고 넓은 너럭바위가 많아 바위 위에 앉아 시원한 물소리를 듣기 좋아요!", addr: "경기 가평군 북면 백둔리 일원", tel: "031-580-2061", img: IMG.valley2 },
+            { id: 45, cat: "valley", sub: "북면·가평읍", badge: "경기 최고봉 계곡", name: "화악산계곡", summary: "경기도에서 가장 높은 화악산(1,468m)에서 발원해 태고의 원시림 자연을 간직한 청정 계곡.", tip: "공기가 무척 상쾌하고 깨끗해요! 1급수 청정 계곡을 따라 가을 드라이브를 즐겨보세요.", addr: "경기 가평군 북면 화악리 일원", tel: "031-580-2061", img: IMG.valley },
+            { id: 46, cat: "valley", sub: "북면·가평읍", badge: "새가 춤추는 절경", name: "조무락계곡", summary: "숲이 워낙 울창해 산새들이 춤추며 즐긴다 하여 이름 붙은 6km 길이의 비경 계곡과 복호동폭포.", tip: "조용한 산길을 걸으며 지저귀는 산새 소리에 귀 기울여 보는 자연 산책 코스로 좋아요!", addr: "경기 가평군 북면 적목리 일원", tel: "031-580-2061", img: IMG.waterfall },
+            { id: 47, cat: "valley", sub: "북면·가평읍", badge: "자라섬 15분 · 데크산책", name: "용추계곡", summary: "칼봉산에서 발원해 와룡추·무송암·탁령뇌 등 아홉 굽이 절경을 빚어내는 가평읍 대표 계곡!", tip: "자라섬에서 가장 가까운 대표 계곡! 숲길 데크가 평탄해 가을 단풍 산책 코스로 최고예요.", addr: "경기 가평군 가평읍 승안리 일원", tel: "031-8078-8062", img: IMG.valley2 },
+            { id: 48, cat: "valley", sub: "북면·가평읍", badge: "칼봉산 숲속 비경", name: "경반계곡", summary: "칼봉산 자연휴양림과 수락폭포를 품은 맑고 호젓한 숲속 청정 계곡.", tip: "칼봉산 자연휴양림 산책로와 함께 둘러보며 피톤치드 가득한 숲속 공기를 마셔보세요!", addr: "경기 가평군 가평읍 경반리 일원", tel: "031-8078-8062", img: IMG.valley },
+            { id: 49, cat: "valley", sub: "설악·청평·상면", badge: "기암괴석 옥류수", name: "유명계곡 (입구지계곡)", summary: "유명산 기암괴석 사이를 흐르며 박쥐소·용소·마당소를 만드는 그림 같은 계곡!", tip: "나무 다리와 데크 탐방로를 따라 걸으며 깊은 소(연못)의 에메랄드 물빛을 감상해 보세요!", addr: "경기 가평군 설악면 가일리 일원", tel: "031-589-5487", img: IMG.valley2 },
+            { id: 50, cat: "valley", sub: "설악·청평·상면", badge: "설악면 드라이브 명소", name: "어비계곡", summary: "어비산 자락에 위치해 맑은 물속 물고기들이 뛰어오르는 듯 생동감 넘치는 아늑한 계곡.", tip: "인근 장작불 솥뚜껑 닭볶음탕 맛집이나 베이커리 카페와 묶어서 드라이브 코스로 들르기 좋아요!", addr: "경기 가평군 설악면 가일리 어비산길 일원", tel: "031-580-2061", img: IMG.valley },
+            { id: 51, cat: "valley", sub: "설악·청평·상면", badge: "초록빛 맑은 물", name: "녹수계곡", summary: "깃대봉과 주발봉의 푸른 숲 그림자가 물에 비쳐 초록빛으로 빛나는 조종면의 고요한 계곡.", tip: "차분하고 한적한 시골 정취를 느끼며 가볍게 드라이브 및 산책하기 좋은 힐링 스폿이에요.", addr: "경기 가평군 조종면 상판리 일원", tel: "031-580-2061", img: IMG.valley2 },
+            { id: 52, cat: "valley", sub: "설악·청평·상면", badge: "천년고찰 산책길", name: "현등사계곡 (운악산계곡)", summary: "운악산 현등사까지 이어지는 완만한 숲길 옆으로 무우폭포·백년폭포가 흐르는 아름다운 계곡!", tip: "경사가 완만한 산책길이라 가족과 도란도란 이야기하며 현등사 절까지 걸어 올라가기 좋아요.", addr: "경기 가평군 조종면 운악청계로589번길 73", tel: "031-585-0707", img: IMG.waterfall },
+            { id: 53, cat: "valley", sub: "설악·청평·상면", badge: "청평 숨은 청정골", name: "화야산큰골계곡", summary: "화야산의 울창한 활엽수림 사이로 맑은 물이 사계절 끊이지 않고 흐르는 청평의 숨은 명소.", tip: "가을철 낙엽이 수북하게 쌓인 임도 산책로를 걸으며 조용한 사색과 산책을 즐겨보세요!", addr: "경기 가평군 청평면 삼회리 일원", tel: "031-580-2061", img: IMG.autumn },
+
+            // ================= 6. 명산 · 자연휴양림 · 공영캠핑 (13곳) =================
+            { id: 54, cat: "nature", sub: "명산·공원", badge: "억새 & 패러글라이딩", name: "유명산 (862m)", summary: "능선이 부드럽고 가을 억새밭과 탁 트인 정상 전망, 계곡 트레킹이 어우러진 100대 명산!", tip: "정상 등반 대신 자연휴양림 내 '자생식물원' 평지 데크길만 걸어도 가을 정취가 가득해요!", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.mountain },
+            { id: 55, cat: "nature", sub: "명산·공원", badge: "가평 제2고봉 단풍산", name: "명지산 (1,267m)", summary: "경기도에서 두 번째로 높은 웅장한 명산으로 가을 단풍과 명지폭포가 장관을 이루는 곳.", tip: "가벼운 나들이라면 입구 생태전시관부터 승천사~명지폭포 왕복 1시간 반 산책 코스를 추천해요!", addr: "경기 가평군 북면 명지산로 377", tel: "031-582-0108", img: IMG.autumn },
+            { id: 56, cat: "nature", sub: "명산·공원", badge: "경기 소금강 · 출렁다리", name: "운악산 (935m)", summary: "기암괴석 봉우리와 단풍이 어우러져 '작은 금강산'이라 불리는 명산! 210m 출렁다리 인기.", tip: "현등사 방향 코스로 오르면 무우폭포와 아찔한 출렁다리를 비교적 수월하게 만날 수 있어요!", addr: "경기 가평군 조종면 운악리 산 162-1", tel: "031-585-7155", img: IMG.mountain2 },
+            { id: 57, cat: "nature", sub: "명산·공원", badge: "경기도 최고봉 1,468m", name: "화악산", summary: "경기도에서 가장 높은 지붕! 가을 하늘과 맞닿은 웅장한 능선과 별빛이 쏟아지는 청정 자연.", tip: "차로 올라갈 수 있는 '화악터널 쌈지공원' 전망대에 들르면 힘들이지 않고 구름 위 풍경을 봐요!", addr: "경기 가평군 북면 화악리 일원", tel: "031-580-2061", img: IMG.mountain },
+            { id: 58, cat: "nature", sub: "명산·공원", badge: "잣나무 숲의 제왕", name: "축령산 (886m)", summary: "아침고요수목원과 잣향기푸른숲을 품고 있는 산으로 울창한 잣나무 군락지가 유명한 힐링 명산.", tip: "가파른 등산 대신 산자락의 '잣향기푸른숲' 산책로를 이용하면 누구나 편안하게 삼림욕이 가능해요!", addr: "경기 가평군 상면 행현리 산 92-1", tel: "031-8008-6769", img: IMG.pine },
+            { id: 59, cat: "nature", sub: "명산·공원", badge: "소망이 이루어지는 산", name: "연인산 도립공원", summary: "사랑과 소망이 이루어진다는 아름다운 이름의 도립공원! 탐방안내소와 명품 계곡길 완비.", tip: "용추계곡 무장애 나눔길(데크로드) 구간이 잘 조성되어 있어 가족 생태 산책으로 제격이에요!", addr: "경기 가평군 가평읍 용추로 229-41", tel: "031-8008-8140", img: IMG.valley },
+            { id: 60, cat: "nature", sub: "명산·공원", badge: "생태전시관 & 하늘다리", name: "명지산 군립공원", summary: "천연기념물과 희귀 식물이 살아 숨 쉬는 생태 보고! 입구에 명지산 생태전시관이 있어요.", tip: "산책 전 입구 '명지산 생태전시관'에 들러 가평의 자연 생태 이야기를 먼저 살펴보세요!", addr: "경기 가평군 북면 명지산로 377", tel: "031-582-0108", img: IMG.autumn },
+            { id: 61, cat: "nature", sub: "자연휴양림", badge: "조용한 숲속 치유", name: "강씨봉자연휴양림", summary: "논남기계곡의 맑은 물소리와 잣나무 숲속 데크 산책로가 일품인 경기도 직영 자연휴양림.", tip: "인파가 적어 한적하게 계곡 물소리를 들으며 조용한 숲길 산책을 즐기기 최고예요!", addr: "경기 가평군 북면 논남기길 520", tel: "031-8008-6611", img: IMG.pine },
+            { id: 62, cat: "nature", sub: "자연휴양림", badge: "국내 최초 자생식물원", name: "유명산자연휴양림", summary: "산림청 국립자연휴양림으로 숲속 산책 데크와 우리 꽃 자생식물원, 숲속 도서관이 잘 갖춰진 곳!", tip: "2.8km 길이의 평탄한 숲속 데크로드와 야생화 식물원은 온 가족 자연 힐링 코스로 만점!", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.garden },
+            { id: 63, cat: "nature", sub: "자연휴양림", badge: "자라섬 15분 · 짚라인", name: "칼봉산자연휴양림", summary: "자라섬·가평역에서 가까우며 기암괴석, 경반계곡, 잣나무 숲, 브릿지짚라인까지 갖춘 휴양림!", tip: "숲속 산책도 하고 짜릿한 짚라인 어드벤처 체험까지 한곳에서 즐길 수 있어요.", addr: "경기 가평군 가평읍 경반안로 454", tel: "031-8078-8060", img: IMG.pine },
+            { id: 64, cat: "nature", sub: "대표캠핑·유원지", badge: "연인산 숲속 캠핑", name: "연인산다목적캠핑장", summary: "백둔계곡 옆 맑은 공기와 넓은 잔디광장, 오토캠핑·캐빈하우스를 갖춘 가평군 공영 캠핑장.", tip: "다음번 가평 가족 캠핑 목적지로 눈여겨보기 좋은 쾌적한 공영 숲속 캠핑장이에요!", addr: "경기 가평군 북면 백둔로 441", tel: "031-8078-8068", img: IMG.camp },
+            { id: 65, cat: "nature", sub: "대표캠핑·유원지", badge: "우리 캠핑스쿨 본부!", name: "자라섬캠핑장", summary: "대한민국 캠핑 문화를 이끄는 국가대표 캠핑장! 북한강 수변 산책로와 카라반·오토캠핑의 성지.", tip: "11월 7일~8일 소중한 추억이 깃든 곳! 서도 수변 산책로에서 가일 아침 물안개 풍경을 놓치지 마세요!", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8028", img: IMG.camp },
+            { id: 66, cat: "nature", sub: "대표캠핑·유원지", badge: "조종천 가족 유원지", name: "산장관광지", summary: "조종천 맑은 강변과 울창한 소나무 숲, 산책로와 야영 시설이 어우러진 종합 가족 휴양 관광지.", tip: "아침고요수목원 근처에 있어 식사 후 강변 소나무 숲길을 가볍게 산책하기 좋아요!", addr: "경기 가평군 상면 덕현산장길 74", tel: "031-8078-8052", img: IMG.camp },
+
+            // ================= 7. 체험 · 축제 · 가평 알짜정보 (9곳 - 네이버 평점 및 자라섬 근접순 정렬) =================
+            { id: 69, cat: "exp", sub: "체험·천문대", badge: "★4.8 · 밤하늘 별자리 관측", name: "주말농장 · 자연과별 천문대", summary: "대형 천체망원경으로 달의 크레이터, 토성의 고리, 반짝이는 가을 별자리를 직접 관측하는 천문대!", tip: "전문 해설과 함께 밤하늘의 행성과 성단을 망원경으로 직접 관측하는 특별한 추억을 만들어 보세요!", addr: "경기 가평군 북면 백둔로342번길 115-33", tel: "031-581-4001", img: IMG.stars },
+            { id: 67, cat: "exp", sub: "체험·천문대", badge: "★4.7 · 잣까기·두부만들기", name: "농촌체험휴양마을 (초롱이둥지 등)", summary: "가평 잣 까기, 손두부 만들기, 인절미 떡메치기, 계절 수확 체험을 즐기는 정겨운 농촌 체험 마을!", tip: "초롱이둥지마을·아홉마지기마을 등에서 직접 떡메를 치고 손두부를 만들어 먹는 체험이 인기예요!", addr: "경기 가평군 설악면 묵안로 908 (초롱이둥지마을)", tel: "031-584-9959", img: IMG.tradition },
+            { id: 75, cat: "exp", sub: "교통·안내정보", badge: "★4.9 · 가평역 광장 안내소", name: "가평 관광정보 (가평역 관광안내소)", summary: "가평 여행 지도, 할인 리플릿, 문화관광해설사 안내, 분실물 및 불편 상담까지 도와주는 공식 안내소!", tip: "가평역 광장 바로 앞에 위치해 있어 종이 관광 지도나 여행 코스 상담이 필요할 때 언제든 들러보세요.", addr: "경기 가평군 가평읍 문화로 13-42", tel: "031-582-8830", img: IMG.bus },
+            { id: 70, cat: "exp", sub: "축제·문화·특산품", badge: "★4.8 · 사계절 페스티벌", name: "가평축제 (재즈 · 꽃페스타)", summary: "자라섬 국제재즈페스티벌, 자라섬 꽃 페스타, 아침고요 오색별빛정원전 등 사계절 축제의 도시!", tip: "11월 말~겨울에는 아침고요수목원 '오색별빛정원전' 불빛 축제가 열려 또 다른 환상을 선사해요!", addr: "경기 가평군 가평읍 자라섬로 60 일원", tel: "031-580-2061", img: IMG.festival },
+            { id: 73, cat: "exp", sub: "축제·문화·특산품", badge: "★4.7 · 산지직송 특산품", name: "가평 특산품 (가평잣 · 잣막걸리)", summary: "전국 생산량 1위 고소한 '가평 잣', 깔끔한 풍미의 '가평 잣막걸리', 달콤한 가평 포도와 사과!", tip: "가평역 앞이나 설악 로컬푸드 직매장에 들르면 산지 직송 진짜 가평 잣과 특산품을 믿고 구매할 수 있어요!", addr: "경기 가평군 가평읍 문화로 13-42 (특산품안내)", tel: "031-580-4786", img: IMG.market },
+            { id: 74, cat: "exp", sub: "교통·안내정보", badge: "★4.6 · 하루 자유 투어", name: "가평 시티투어 순환버스", summary: "티켓 한 장이면 자라섬~남이섬~쁘띠프랑스~아침고요수목원 주요 명소를 하루 종일 자유롭게 승하차!", tip: "대중교통(ITX-청춘) 이용객이거나 운전 부담 없이 가평 핵심 코스를 돌고 싶을 때 가장 편리해요!", addr: "경기 가평군 가평읍 문화로 13-42 (가평역 승강장)", tel: "031-582-2421", img: IMG.bus },
+            { id: 71, cat: "exp", sub: "축제·문화·특산품", badge: "★4.6 · 라이딩 명소", name: "가평 체육대회 & 자전거길", summary: "북한강 자전거길, 색현터널 라이딩, 가평 종합운동장 등 전국 생활체육과 라이딩의 중심지!", tip: "자라섬 인근 '색현터널 자전거길'은 터널 끝에서 역광 실루엣 인생샷을 찍는 핫플로 유명해요!", addr: "경기 가평군 가평읍 대곡리 312 (종합운동장)", tel: "031-580-4960", img: IMG.rail },
+            { id: 72, cat: "exp", sub: "축제·문화·특산품", badge: "★4.5 · 천년 역사 유산", name: "가평 문화재 (가평향교 · 현등사)", summary: "조선시대 교육기관인 '가평향교'와 신라 법흥왕 때 창건된 천년고찰 '현등사 삼층석탑' 등 역사 탐방!", tip: "자라섬에서 차로 5분 거리인 '가평향교'에 들러 고즈넉한 조선시대 건축미를 감상해 보세요!", addr: "경기 가평군 가평읍 향교로 27-9 (가평향교)", tel: "031-582-3137", img: IMG.tradition },
+            { id: 68, cat: "exp", sub: "체험·천문대", badge: "★4.5 · 산사 다도체험", name: "템플스테이 (백련사 · 대원사)", summary: "조용한 가을 산사에서 스님과 차를 마시고(다도), 범종 소리를 들으며 마음을 차분히 비우는 시간.", tip: "당일형 휴식 프로그램이나 산사 산책을 통해 도심에서 못 느낀 고요한 평화를 경험해 보세요!", addr: "경기 가평군 상면 축령로45번길 24 (백련사)", tel: "031-585-3852", img: IMG.tradition }
+        ];
+
+        // State Variables
+        let currentCat = 'all';
+        let currentSub = '전체';
+
+        // Fisher-Yates Shuffle: Randomize Campsite Order on Every Entry / Tab Switch
+        function shuffleCampsites() {
+            const campIndices = [];
+            const campItems = [];
+            PLACES.forEach((item, idx) => {
+                if (item.cat === 'camp') {
+                    campIndices.push(idx);
+                    campItems.push(item);
+                }
+            });
+            for (let i = campItems.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [campItems[i], campItems[j]] = [campItems[j], campItems[i]];
+            }
+            campIndices.forEach((originalIdx, i) => {
+                PLACES[originalIdx] = campItems[i];
+            });
+        }
+
+        // Helper: Safe Fallback Image URL (ThankQ Orange Color)
+        function getFallbackImg(name) {
+            return `https://placehold.co/400x300/f06a1a/ffffff?text=${encodeURIComponent(name)}`;
+        }
+
+        // Helper: Build Map & Official Info URLs
+        function getLinks(place) {
+            const qName = encodeURIComponent(`가평 ${place.name}`);
+            return {
+                tqLink: place.tqUrl || null,
+                naverInfo: `https://search.naver.com/search.naver?query=${qName}`,
+                naverMap: `https://map.naver.com/p/search/${encodeURIComponent(place.name + ' ' + place.addr)}`,
+                kakaoMap: `https://map.kakao.com/link/search/${encodeURIComponent(place.name)}`
+            };
+        }
+
+        // Copy Address to Clipboard (Iframe-safe execCommand + Toast)
+        function copyAddress(addr, event) {
+            if (event) event.stopPropagation();
+            const tempInput = document.createElement('textarea');
+            tempInput.value = addr;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try {
+                document.execCommand('copy');
+                showToast(`주소가 복사되었습니다: ${addr}`);
+            } catch (err) {
+                showToast('주소를 길게 눌러 복사해주세요.');
+            }
+            document.body.removeChild(tempInput);
+        }
+
+        function showToast(msg) {
+            const box = document.getElementById('toastBox');
+            document.getElementById('toastMsg').textContent = msg;
+            box.classList.remove('hidden');
+            clearTimeout(window.toastTimer);
+            window.toastTimer = setTimeout(() => {
+                box.classList.add('hidden');
+            }, 2200);
+        }
+
+        // Category Selection Handler
+        function selectCategory(cat) {
+            currentCat = cat;
+            currentSub = '전체';
+
+            // Re-shuffle campsites randomly whenever entering 'camp' or 'all'
+            if (cat === 'camp' || cat === 'all') {
+                shuffleCampsites();
+            }
+
+            // Update Top Tabs
+            document.querySelectorAll('.top-tab').forEach(btn => btn.classList.remove('active'));
+            const activeTop = document.getElementById(`tab-${cat}`);
+            if (activeTop) {
+                activeTop.classList.add('active');
+                activeTop.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+
+            // Update Bottom Bar
+            document.querySelectorAll('.bot-nav-btn').forEach(btn => btn.classList.remove('active'));
+            const botKey = (cat === 'valley' || cat === 'nature' || cat === 'exp') ? 'tour' : cat;
+            const activeBot = document.getElementById(`bot-${botKey}`);
+            if (activeBot) activeBot.classList.add('active');
+
+            // Show Leaflet Cover Directory on 'all', focus on list in specific categories
+            const hero = document.getElementById('heroSection');
+            if (cat === 'all') {
+                hero.classList.remove('hidden');
+            } else {
+                hero.classList.add('hidden');
+            }
+
+            renderSubFilters();
+            renderCards();
+            document.getElementById('mainScroll').scrollTop = 0;
+        }
+
+        // Sub-filter Selection Handler
+        function selectSubFilter(sub) {
+            currentSub = sub;
+            if (currentCat === 'camp') {
+                shuffleCampsites();
+            }
+            renderSubFilters();
+            renderCards();
+        }
+
+        // Render Sub-filter Chips
+        function renderSubFilters() {
+            const meta = CATEGORY_META[currentCat];
+            document.getElementById('catTitleText').textContent = meta.title;
+            document.getElementById('catDescText').textContent = meta.desc;
+
+            const container = document.getElementById('subFilterContainer');
+            if (meta.subs.length <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = meta.subs.map(sub => `
+                <button 
+                    onclick="selectSubFilter('${sub}')" 
+                    class="sub-chip px-3 py-1.5 rounded-full text-xs border border-gray-200 bg-white text-gray-600 whitespace-nowrap transition ${currentSub === sub ? 'active' : ''}"
+                >
+                    ${sub}
+                </button>
+            `).join('');
+        }
+
+        // Render Place Cards (땡큐캠핑 오렌지 포인트 + 정돈된 관광 리플릿 레이아웃)
+        function renderCards() {
+            const filtered = PLACES.filter(p => {
+                const matchCat = currentCat === 'all' || p.cat === currentCat;
+                const matchSub = currentSub === '전체' || p.sub === currentSub;
+                return matchCat && matchSub;
+            });
+
+            document.getElementById('resultCountBadge').textContent = `총 ${filtered.length}곳`;
+            const container = document.getElementById('cardsContainer');
+
+            // Subtle Leaflet Badge Colors Harmonized with ThankQ Orange
+            const catColorMap = {
+                eight: "bg-amber-600 text-white",
+                food: "bg-[#f06a1a] text-white",
+                camp: "bg-[#d4550a] text-white",
+                tour: "bg-orange-500 text-white",
+                valley: "bg-sky-600 text-white",
+                nature: "bg-emerald-700 text-white",
+                exp: "bg-stone-700 text-white"
+            };
+
+            container.innerHTML = filtered.map(place => {
+                const links = getLinks(place);
+                const badgeClass = catColorMap[place.cat] || "bg-[#f06a1a] text-white";
+
+                return `
+                <article onclick="openDetailModal(${place.id})" class="bg-white rounded-2xl border border-orange-100/80 shadow-xs hover:shadow-md transition overflow-hidden cursor-pointer card-anim">
+                    <!-- Top Row: Image + Visual Title & Summary -->
+                    <div class="p-3.5 flex gap-3.5">
+                        <!-- Representative Thumbnail with Reference Image Label -->
+                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                            <img 
+                                src="${place.img}" 
+                                alt="${place.name}" 
+                                loading="lazy"
+                                onerror="this.onerror=null;this.src='${getFallbackImg(place.name)}';"
+                                class="w-full h-full object-cover"
+                            >
+                            <span class="absolute top-1.5 left-1.5 ${badgeClass} text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-xs">
+                                ${place.badge}
+                            </span>
+                            <span class="absolute bottom-0 inset-x-0 bg-black/55 text-white/90 text-[9px] text-center py-0.5">
+                                참고이미지
+                            </span>
+                        </div>
+
+                        <!-- Right Text Info -->
+                        <div class="flex-grow min-w-0 flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-start justify-between gap-1">
+                                    <h4 class="font-extrabold text-gray-900 text-sm sm:text-[15px] leading-snug">${place.name}</h4>
+                                    <span class="text-[10px] text-gray-400 font-semibold whitespace-nowrap flex-shrink-0">${place.sub}</span>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-1 leading-relaxed line-clamp-3">${place.summary}</p>
+                            </div>
+                            <div class="mt-2 text-[11px] text-[#f06a1a] font-bold">
+                                상세 소개 보기 &gt;
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Kid-Friendly How-to-Enjoy Box -->
+                    <div class="mx-3.5 mb-2.5 bg-[#fff7f2] border border-orange-100 rounded-xl px-3 py-2">
+                        <p class="text-[11px] text-gray-800 leading-snug"><b class="text-[#d4550a]">이용·관광 팁 :</b> ${place.tip}</p>
+                    </div>
+
+                    <!-- Structured Address & Phone Direct Links -->
+                    <div class="mx-3.5 mb-2.5 bg-gray-50 rounded-xl px-3 py-2 text-[11px] text-gray-700 space-y-1.5 border border-gray-100" onclick="event.stopPropagation()">
+                        <div class="flex items-center justify-between gap-2">
+                            <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="hover:text-[#f06a1a] truncate font-medium">
+                                <b class="text-gray-500 mr-1">주소</b>
+                                <span class="underline decoration-dotted underline-offset-2">${place.addr}</span>
+                            </a>
+                            <button onclick="copyAddress('${place.addr}', event)" class="text-[10px] bg-white border border-gray-200 px-2 py-0.5 rounded font-bold text-gray-600 flex-shrink-0 active:bg-gray-100">
+                                복사
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <a href="tel:${place.tel}" class="hover:text-[#f06a1a] font-bold text-gray-800">
+                                <b class="text-gray-500 font-medium mr-1">전화</b>
+                                <span class="underline decoration-dotted underline-offset-2">${place.tel}</span>
+                            </a>
+                            <a href="tel:${place.tel}" class="text-[10px] bg-[#f06a1a] text-white px-2.5 py-0.5 rounded font-bold">
+                                전화걸기
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Direct Action Links (땡큐캠핑 캠핑장은 전용 바로가기 버튼 포함) -->
+                    ${links.tqLink ? `
+                    <div class="px-3.5 pb-2.5" onclick="event.stopPropagation()">
+                        <a href="${links.tqLink}" target="_blank" rel="noopener noreferrer" class="w-full bg-[#f06a1a] hover:bg-[#d4550a] text-white font-extrabold text-xs py-2 rounded-xl flex items-center justify-center gap-1.5 shadow-xs transition">
+                            <span>땡큐캠핑 상세정보 · 실시간 예약 바로가기</span>
+                        </a>
+                    </div>
+                    ` : ''}
+                    <div class="bg-gray-50/90 border-t border-gray-100 px-3.5 py-2 grid grid-cols-3 gap-1.5" onclick="event.stopPropagation()">
+                        <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-200 hover:border-[#f06a1a] text-gray-700 font-bold text-[10px] py-1.5 rounded-lg text-center transition">
+                            네이버지도
+                        </a>
+                        <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-200 hover:border-[#f06a1a] text-gray-700 font-bold text-[10px] py-1.5 rounded-lg text-center transition">
+                            카카오맵
+                        </a>
+                        <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="bg-[#fff4ed] border border-orange-200 text-[#d4550a] font-bold text-[10px] py-1.5 rounded-lg text-center transition">
+                            상세정보·후기
+                        </a>
+                    </div>
+                </article>
+                `;
+            }).join('');
+        }
+
+        // Open Place Detail Modal
+        function openDetailModal(id) {
+            const place = PLACES.find(p => p.id === id);
+            if (!place) return;
+            const links = getLinks(place);
+
+            const modalImg = document.getElementById('modalImg');
+            modalImg.src = place.img;
+            modalImg.onerror = function() { this.src = getFallbackImg(place.name); };
+
+            document.getElementById('modalBadge').textContent = `${place.badge} · ${place.sub}`;
+            document.getElementById('modalTitle').textContent = place.name;
+            document.getElementById('modalSummary').textContent = place.summary;
+            document.getElementById('modalTip').textContent = place.tip;
+            document.getElementById('modalAddr').textContent = place.addr;
+            document.getElementById('modalTel').textContent = place.tel;
+            document.getElementById('modalCallLink').href = `tel:${place.tel}`;
+            document.getElementById('modalCopyBtn').onclick = (e) => copyAddress(place.addr, e);
+
+            document.getElementById('modalLinksGrid').innerHTML = `
+                ${links.tqLink ? `
+                <a href="${links.tqLink}" target="_blank" rel="noopener noreferrer" class="col-span-2 bg-[#f06a1a] text-white font-extrabold text-xs py-2.5 rounded-xl text-center shadow-xs">
+                    땡큐캠핑 실시간 예약 · 방문후기 바로가기
+                </a>
+                ` : ''}
+                <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="bg-gray-800 text-white font-bold text-xs py-2.5 rounded-xl text-center">
+                    네이버지도 길찾기
+                </a>
+                <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="bg-[#FEE500] text-gray-900 font-bold text-xs py-2.5 rounded-xl text-center">
+                    카카오맵 길찾기
+                </a>
+                <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="col-span-2 bg-[#fff4ed] border border-orange-200 text-[#d4550a] font-bold text-xs py-2.5 rounded-xl text-center">
+                    포털 상세정보 및 방문자 사진 보기
+                </a>
+            `;
+
+            document.getElementById('detailModal').classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+        }
+
+        function openScheduleModal() {
+            document.getElementById('scheduleModal').classList.remove('hidden');
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').classList.add('hidden');
+        }
+
+        // Close modals on backdrop click
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) closeDetailModal();
+        });
+        document.getElementById('scheduleModal').addEventListener('click', function(e) {
+            if (e.target === this) closeScheduleModal();
+        });
+
+        // Initial Render on Load
+        window.onload = function() {
+            shuffleCampsites();
+            renderSubFilters();
+            renderCards();
+        };
+    </script>
+</body>
+</html>
