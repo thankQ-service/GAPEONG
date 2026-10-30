@@ -156,50 +156,50 @@
         </nav>
 
         <!-- 3. Main Scrollable Container -->
-        <main id="mainScroll" class="flex-grow overflow-y-auto">
+        <main id="mainScroll" class="flex-grow overflow-y-auto flex flex-col">
 
             <!-- [메인 화면] 첨부 포스터 스타일 (이모지 없는 전용 일러스트 아이콘 그리드 + 예쁜 서체 라벨 + 공식 로고) -->
-            <section id="posterHomeSection" class="min-h-full bg-[#fbf0d5] px-5 pt-5 pb-7 flex flex-col justify-between relative overflow-hidden">
+            <section id="posterHomeSection" class="flex-grow bg-[#fbf0d5] px-5 pt-4 pb-5 flex flex-col justify-between relative overflow-hidden">
                 <!-- 은은한 배경 장식 -->
                 <div class="absolute -top-12 -left-12 w-36 h-36 rounded-full bg-[#f06a1a]/5 pointer-events-none"></div>
                 <div class="absolute -bottom-16 -right-12 w-44 h-44 rounded-full bg-[#8a4b19]/5 pointer-events-none"></div>
 
                 <!-- 상단 로고 영역 (가평군 로고 & 땡큐캠핑 로고 랜딩 링크 연결) -->
-                <div class="flex items-center justify-between gap-3 z-10">
+                <div class="flex items-center justify-between gap-3 z-10 flex-shrink-0">
                     <a href="https://www.gp.go.kr/portal/index.do" target="_blank" rel="noopener noreferrer" class="bg-white/95 px-3 py-1.5 rounded-2xl shadow-sm border border-[#ead8b1] flex items-center hover:bg-white transition" title="가평군청 포털 이동">
-                        <img src="https://i.postimg.cc/63116LGw/logo-2025.png" alt="가평 로고" class="h-7 sm:h-8 w-auto object-contain">
+                        <img src="https://i.postimg.cc/63116LGw/logo-2025.png" alt="가평 로고" class="h-6 sm:h-8 w-auto object-contain">
                     </a>
                     <a href="https://m.thankqcamping.com/" target="_blank" rel="noopener noreferrer" class="bg-white/95 px-3 py-1.5 rounded-2xl shadow-sm border border-[#ead8b1] flex items-center hover:bg-white transition" title="땡큐캠핑 이동">
-                        <img src="https://i.postimg.cc/d0TcvPZF/image-(28).png" alt="땡큐캠핑 로고" class="h-7 sm:h-8 w-auto object-contain">
+                        <img src="https://i.postimg.cc/d0TcvPZF/image-(28).png" alt="땡큐캠핑 로고" class="h-6 sm:h-8 w-auto object-contain">
                     </a>
                 </div>
 
                 <!-- 포스터 메인 타이틀 영역 (아치형 상단 문구 + 가평 관광, 먹거리 탐방) -->
-                <div class="text-center mt-3 mb-4 z-10">
-                    <svg viewBox="0 0 320 46" class="w-64 sm:w-72 mx-auto -mb-2 overflow-visible">
+                <div class="text-center mt-2 mb-2 z-10 flex-shrink-0">
+                    <svg viewBox="0 0 320 42" class="w-60 sm:w-72 mx-auto -mb-2 overflow-visible">
                         <defs>
-                            <path id="posterCurve" d="M 18,40 Q 160,6 302,40" fill="transparent" />
+                            <path id="posterCurve" d="M 18,36 Q 160,4 302,36" fill="transparent" />
                         </defs>
-                        <text class="fill-[#b97728] ptd-bold text-[13.5px] tracking-tight" text-anchor="middle">
+                        <text class="fill-[#b97728] ptd-bold text-[13px] tracking-tight" text-anchor="middle">
                             <textPath href="#posterCurve" startOffset="50%">자라섬 캠핑스쿨과 함께 떠나는</textPath>
                         </text>
                     </svg>
 
-                    <h1 class="poster-title-font text-[#8a4b19] text-[34px] sm:text-[38px] leading-[1.18] drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
+                    <h1 class="poster-title-font text-[#8a4b19] text-[30px] sm:text-[38px] leading-[1.15] drop-shadow-[0_1px_0_rgba(255,255,255,0.7)]">
                         가평 관광, 먹거리<br>
                         <span class="text-[#d4550a]">탐방</span>
                     </h1>
-                    <p class="ptd-regular text-[12.5px] text-[#9b6638] mt-1.5 tracking-tight">
+                    <p class="ptd-regular text-[12px] text-[#9b6638] mt-1 tracking-tight">
                         원하는 아이콘을 눌러 카테고리별 안내를 확인하세요
                     </p>
                 </div>
 
                 <!-- 네비게이션 카테고리 매칭 플랫 일러스트 그리드 (이모지 미사용) -->
-                <div class="grid grid-cols-3 gap-x-3 gap-y-5 my-auto py-2 z-10">
+                <div class="grid grid-cols-3 gap-x-3 gap-y-3.5 my-auto py-1 z-10">
 
                     <!-- 1. 가평 8경 -->
                     <button onclick="selectCategory('eight')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <circle cx="72" cy="24" r="11" fill="#F29F38"/>
                                 <path d="M12 72 L38 32 L62 72 Z" fill="#5D8C68"/>
@@ -212,12 +212,12 @@
                                 <path d="M22 77 Q30 74 38 77 T54 77 T70 77" stroke="#D6EEFF" stroke-width="2.5" fill="none" stroke-linecap="round"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">가평 8경</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">가평 8경</span>
                     </button>
 
                     <!-- 2. 대표 맛집 -->
                     <button onclick="selectCategory('food')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <circle cx="42" cy="57" r="25" fill="#4A443F"/>
                                 <circle cx="42" cy="57" r="20" fill="#D95B26"/>
@@ -230,12 +230,12 @@
                                 <rect x="67" y="46" width="18" height="11" rx="2" fill="#E39758"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">대표 맛집</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">대표 맛집</span>
                     </button>
 
                     <!-- 3. 캠핑장 -->
                     <button onclick="selectCategory('camp')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <path d="M76 22 L63 44 H89 Z" fill="#4E7D52"/>
                                 <path d="M76 35 L60 60 H92 Z" fill="#3D6841"/>
@@ -248,12 +248,12 @@
                                 <path d="M77 67 Q81 72 77 77 Q73 72 77 67 Z" fill="#FFE066"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">캠핑장</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">캠핑장</span>
                     </button>
 
                     <!-- 4. 관광 · 문화 -->
                     <button onclick="selectCategory('tour')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <rect x="26" y="42" width="48" height="36" rx="2" fill="#F4C07A"/>
                                 <path d="M20 44 L50 20 L80 44 Z" fill="#C9593B"/>
@@ -266,12 +266,12 @@
                                 <rect x="79.5" y="74" width="3" height="8" fill="#7C4728"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">관광 · 문화</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">관광 · 문화</span>
                     </button>
 
                     <!-- 5. 가평 계곡 -->
                     <button onclick="selectCategory('valley')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <ellipse cx="26" cy="48" rx="16" ry="18" fill="#9E978E"/>
                                 <ellipse cx="74" cy="50" rx="16" ry="17" fill="#8A8279"/>
@@ -282,12 +282,12 @@
                                 <ellipse cx="50" cy="77" rx="32" ry="8" fill="#469EC0"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">가평 계곡</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">가평 계곡</span>
                     </button>
 
                     <!-- 6. 명산 · 휴양림 -->
                     <button onclick="selectCategory('nature')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <path d="M14 78 Q50 54 86 78 Z" fill="#7FB053"/>
                                 <path d="M30 28 L17 48 H43 Z" fill="#3B6E4C"/>
@@ -300,12 +300,12 @@
                                 <path d="M22 78 H78 M28 72 V81 M42 72 V81 M58 72 V81 M72 72 V81" stroke="#C8B69E" stroke-width="3" stroke-linecap="round"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">명산 · 휴양림</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">명산 · 휴양림</span>
                     </button>
 
                     <!-- 7. 체험 · 정보 -->
                     <button onclick="selectCategory('exp')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <path d="M26 56 A24 24 0 0 1 74 56 Z" fill="#6F8FAF"/>
                                 <path d="M46 32 A24 24 0 0 1 56 56 H46 Z" fill="#4A6785"/>
@@ -317,12 +317,12 @@
                                 <path d="M36 16 L38 21 L43 23 L38 25 L36 30 L34 25 L29 23 L34 21 Z" fill="#F29F38"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">체험 · 정보</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">체험 · 정보</span>
                     </button>
 
                     <!-- 8. 전체 둘러보기 -->
                     <button onclick="selectCategory('all')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <polygon points="16,30 38,24 38,76 16,82" fill="#E8C68E"/>
                                 <polygon points="38,24 62,30 62,82 38,76" fill="#F5DFB5"/>
@@ -332,12 +332,12 @@
                                 <circle cx="50" cy="32" r="6" fill="#FFFDF9"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">전체 보기</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">전체 보기</span>
                     </button>
 
                     <!-- 9. 캠핑스쿨 일정 -->
                     <button onclick="openScheduleModal()" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <circle cx="50" cy="46" r="27" fill="#E69A3A"/>
                                 <circle cx="50" cy="46" r="22" fill="none" stroke="#8A4B19" stroke-width="2" stroke-dasharray="3 3"/>
@@ -347,14 +347,14 @@
                                 <rect x="34" y="80" width="32" height="5" rx="2.5" fill="#8A4B19"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[14.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1">캠핑스쿨 안내</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">캠핑스쿨 안내</span>
                     </button>
 
                 </div>
 
                 <!-- 하단 행사 정보 표기 -->
-                <div class="mt-4 pt-3 border-t border-[#e5d2a8] text-center z-10">
-                    <p class="ptd-medium text-[12px] text-[#8a4b19] tracking-tight">
+                <div class="mt-2 pt-2 border-t border-[#e5d2a8] text-center z-10 flex-shrink-0">
+                    <p class="ptd-medium text-[11.5px] text-[#8a4b19] tracking-tight">
                         제1회 자라섬 캠핑스쿨 · 2026. 11. 7(토) ~ 11. 8(일)
                     </p>
                 </div>
