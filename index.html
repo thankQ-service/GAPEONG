@@ -94,12 +94,25 @@
         .card-anim {
             animation: fadeUp 0.22s ease-out forwards;
         }
+        /* 카테고리 뷰 전용 자연스러운 배경 이미지 레이어 */
+        .cat-bg-image {
+            background-image: url('https://i.postimg.cc/bv2V32Gh/seukeulinsyas-2026-10-30-172607.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
     </style>
 </head>
 <body class="min-h-screen flex justify-center items-start sm:py-4">
 
     <!-- Mobile Online Leaflet Container -->
     <div class="w-full max-w-[480px] bg-[#f7f5f2] sm:rounded-[28px] sm:shadow-2xl overflow-hidden flex flex-col relative sm:border-[6px] sm:border-white min-h-screen sm:min-h-0 sm:h-[92vh]">
+
+        <!-- 카테고리 전용 은은한 백그라운드 레이어 (카테고리 진입 시 노출) -->
+        <div id="catBgLayer" class="hidden fixed sm:absolute inset-0 max-w-[480px] mx-auto pointer-events-none z-0 overflow-hidden">
+            <div class="cat-bg-image w-full h-full opacity-35 scale-[1.02]"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-[#fbf0d5]/75 via-[#f7f5f2]/80 to-[#f7f5f2]/85"></div>
+        </div>
 
         <!-- 1. Top Leaflet Header (내부 카테고리 진입 시 노출, 시그니처 오렌지 유지) -->
         <header id="topHeader" class="hidden bg-[#f06a1a] text-white px-3.5 py-2.5 sticky top-0 z-30 shadow-sm flex-shrink-0">
@@ -156,7 +169,7 @@
         </nav>
 
         <!-- 3. Main Scrollable Container -->
-        <main id="mainScroll" class="flex-grow overflow-y-auto flex flex-col">
+        <main id="mainScroll" class="flex-grow overflow-y-auto flex flex-col relative z-10">
 
             <!-- [메인 화면] 첨부 포스터 스타일 (이모지 없는 전용 일러스트 아이콘 그리드 + 예쁜 서체 라벨 + 공식 로고) -->
             <section id="posterHomeSection" class="flex-grow bg-[#fbf0d5] px-5 pt-4 pb-5 flex flex-col justify-between relative overflow-hidden">
@@ -361,9 +374,9 @@
             </section>
 
             <!-- [카테고리 상세 리스트 뷰] (카테고리 선택 시 표시) -->
-            <div id="listViewWrapper" class="hidden pb-20">
+            <div id="listViewWrapper" class="hidden pb-20 flex-grow">
                 <section class="px-3.5 pt-3 pb-2">
-                    <div id="categoryHeaderBox" class="bg-white rounded-2xl p-3.5 border border-orange-100 shadow-sm mb-2 flex items-center justify-between gap-2">
+                    <div id="categoryHeaderBox" class="bg-white/90 backdrop-blur-sm rounded-2xl p-3.5 border border-orange-100/90 shadow-sm mb-2 flex items-center justify-between gap-2">
                         <div class="border-l-4 border-[#f06a1a] pl-2.5">
                             <h3 id="catTitleText" class="font-extrabold text-gray-900 text-sm">가평 8경</h3>
                             <p id="catDescText" class="text-[11px] text-gray-500 mt-0.5">가평을 대표하는 여덟 가지 절경</p>
@@ -372,12 +385,25 @@
                     </div>
 
                     <!-- 참고 이미지 안내 문구 -->
-                    <div class="bg-amber-50/90 border border-amber-200/90 rounded-xl px-3 py-2 mb-2.5 text-[11px] text-amber-900 leading-snug">
+                    <div id="photoNoticeBox" class="bg-amber-50/85 backdrop-blur-xs border border-amber-200/90 rounded-xl px-3 py-2 mb-2.5 text-[11px] text-amber-900 leading-snug">
                         <b>사진 안내 :</b> 본 리플릿에 수록된 사진은 이해를 돕기 위한 <b>참고 이미지</b>이며, 실제 현장 사진 및 계절 풍경과 다를 수 있습니다.
                     </div>
 
-                    <!-- 세부 필터 칩 -->
-                    <div id="subFilterContainer" class="flex gap-1.5 overflow-x-auto no-scrollbar pb-1"></div>
+                    <!-- 세부 필터 칩 (잘림 방지 줄바꿈 적용) + 보기 방식 전환 (사진카드 / 간편목록) -->
+                    <div class="space-y-2 pb-1">
+                        <div id="subFilterContainer" class="flex flex-wrap items-center gap-1.5"></div>
+                        <div class="flex items-center justify-between gap-2 pt-0.5">
+                            <span class="text-[11px] font-semibold text-gray-500 pl-0.5">항목을 터치하면 상세 안내가 열립니다</span>
+                            <div class="flex items-center bg-white/95 border border-orange-200 rounded-full p-0.5 shadow-xs flex-shrink-0">
+                                <button onclick="setViewMode('card')" id="btnViewCard" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white">
+                                    사진카드
+                                </button>
+                                <button onclick="setViewMode('list')" id="btnViewList" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]">
+                                    간편목록
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </section>
 
                 <!-- 장소 카드 목록 -->
@@ -539,128 +565,156 @@
             market: "https://images.unsplash.com/photo-1533900298318-6b8da08a523e?auto=format&fit=crop&w=700&q=80"
         };
 
-        // 전체 101곳 데이터베이스 (모든 주소는 네이버지도·카카오맵에서 정확히 검색되는 실제 도로명/지번 주소로 입력)
+        // 전체 101곳 데이터베이스 (실제 검증된 가평군 도로명·지번 주소 및 땡큐캠핑 고유 예약 URL 매칭)
         const PLACES = [
             // ================= 1. 가평 8경 (8곳) =================
             { id: 1, cat: "eight", sub: "호수·강변절경", badge: "제1경 · 호수드라이브", name: "청평호반", summary: "북한강을 막아 만든 맑고 넓은 호수로 사계절 산그림자가 비치는 가평 제1경.", tip: "호반로를 따라 드라이브하며 물안개 피어오르는 전망 포인트와 수변 카페를 함께 즐겨보세요.", addr: "경기 가평군 청평면 호반로 882", tel: "031-580-2066", img: IMG.lake2 },
-            { id: 2, cat: "eight", sub: "호수·강변절경", badge: "제2경 · 백두산천지 느낌", name: "호명호수", summary: "호명산 정상 부근에 조성된 국내 최초 양수발전 상부 저수지로 하늘과 맞닿은 비경.", tip: "입구 주차 후 노선버스로 편하게 올라가 호수 전망대와 산책 데크를 여유롭게 둘러보세요.", addr: "경기 가평군 청평면 상지로64번길 77", tel: "031-580-2066", img: IMG.lake },
-            { id: 3, cat: "eight", sub: "계곡·단풍절경", badge: "제3경 · 9가지 비경", name: "용추구곡 (와룡추)", summary: "연인산 자락을 따라 흐르는 9개의 절경 계곡으로 자라섬에서 가장 가까운 대표 비경.", tip: "입구 무장애 나눔길 데크가 평탄하게 잘 조성되어 있어 가족 산책 코스로 제격입니다.", addr: "경기 가평군 가평읍 용추로 429", tel: "031-580-2066", img: IMG.valley },
-            { id: 4, cat: "eight", sub: "계곡·단풍절경", badge: "제4경 · 가을단풍 명산", name: "명지단풍 (명지산)", summary: "경기도 제2고봉 명지산의 웅장한 산세와 계곡을 붉게 물들이는 가을 단풍 절경.", tip: "11월 초중순 늦단풍과 익근리 계곡 산책로, 명지폭포까지만 가볍게 다녀와도 충분히 아름답습니다.", addr: "경기 가평군 북면 도대리 308", tel: "031-582-0108", img: IMG.autumn },
-            { id: 5, cat: "eight", sub: "계곡·단풍절경", badge: "제5경 · 에메랄드 용소", name: "적목용소 (도마치계곡)", summary: "가평 최북단 청정 1급수 계곡과 에메랄드빛 용소폭포가 어우러진 천혜의 비경.", tip: "투명한 물빛을 배경으로 계곡 전망대에서 가족 기념사진을 남기기 좋습니다.", addr: "경기 가평군 북면 적목리 290", tel: "031-580-2066", img: IMG.valley2 },
+            { id: 2, cat: "eight", sub: "호수·강변절경", badge: "제2경 · 백두산천지 느낌", name: "호명호수", summary: "호명산 정상 부근에 조성된 국내 최초 양수발전 상부 저수지로 하늘과 맞닿은 비경.", tip: "입구 주차 후 노선버스로 편하게 올라가 호수 전망대와 산책 데크를 여유롭게 둘러보세요.", addr: "경기 가평군 청평면 상지로 370", tel: "031-580-2066", img: IMG.lake },
+            { id: 3, cat: "eight", sub: "계곡·단풍절경", badge: "제3경 · 9가지 비경", name: "용추구곡 (와룡추)", summary: "연인산 자락을 따라 흐르는 9개의 절경 계곡으로 자라섬에서 가장 가까운 대표 비경.", tip: "입구 무장애 나눔길 데크가 평탄하게 잘 조성되어 있어 가족 산책 코스로 제격입니다.", addr: "경기 가평군 가평읍 용추로 229-41", tel: "031-580-2066", img: IMG.valley },
+            { id: 4, cat: "eight", sub: "계곡·단풍절경", badge: "제4경 · 가을단풍 명산", name: "명지단풍 (명지산)", summary: "경기도 제2고봉 명지산의 웅장한 산세와 계곡을 붉게 물들이는 가을 단풍 절경.", tip: "11월 초중순 늦단풍과 익근리 계곡 산책로, 명지폭포까지만 가볍게 다녀와도 충분히 아름답습니다.", addr: "경기 가평군 북면 가화로 2292", tel: "031-582-0108", img: IMG.autumn },
+            { id: 5, cat: "eight", sub: "계곡·단풍절경", badge: "제5경 · 에메랄드 용소", name: "적목용소 (도마치계곡)", summary: "가평 최북단 청정 1급수 계곡과 에메랄드빛 용소폭포가 어우러진 천혜의 비경.", tip: "투명한 물빛을 배경으로 계곡 전망대에서 가족 기념사진을 남기기 좋습니다.", addr: "경기 가평군 북면 적목리 718-1", tel: "031-580-2066", img: IMG.valley2 },
             { id: 6, cat: "eight", sub: "명산·숲절경", badge: "제6경 · 기암괴석 출렁다리", name: "운악망경 (운악산)", summary: "구름을 뚫는 기암괴석 봉우리와 천년고찰 현등사, 아찔한 출렁다리가 어우러진 명산.", tip: "등산 초보자도 현등사 산책길과 소원바위 코스를 따라 부담 없이 절경을 감상할 수 있습니다.", addr: "경기 가평군 조종면 운악청계로 501", tel: "031-580-2066", img: IMG.mountain },
             { id: 7, cat: "eight", sub: "명산·숲절경", badge: "제7경 · 80년 잣나무숲", name: "축령백림 (축령산 잣나무숲)", summary: "수령 80년 이상의 아름드리 잣나무 수만 그루가 하늘을 가리는 국내 최대 피톤치드 숲.", tip: "잣향기푸른숲 치유 산책로와 연결되어 있어 상쾌한 숲향기를 마시며 힐링하기 좋습니다.", addr: "경기 가평군 상면 축령로 289-146", tel: "031-8008-6769", img: IMG.forest },
             { id: 8, cat: "eight", sub: "계곡·단풍절경", badge: "제8경 · 기암계곡 트레킹", name: "유명농계 (유명산 계곡)", summary: "유명산 기암괴석 사이로 마당소·용소·박쥐소가 연이어 펼쳐지는 맑고 깊은 계곡.", tip: "자연휴양림 데크길과 계곡 출렁다리를 따라 걷기 편하게 조성되어 있습니다.", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.valley },
 
-            // ================= 2. 대표 맛집 (24곳 - 네이버 플레이스 평점 높은순 & 자라섬 근접순, 닭갈비 비중 조절 + 카페·베이커리 대폭 강화) =================
+            // ================= 2. 대표 맛집 (24곳 - 실제 자라섬 근접·평점 상위 검증 맛집 & 카페·베이커리) =================
             // [한식·일식·양식 - 9곳]
-            { id: 101, cat: "food", sub: "한식·일식·양식", badge: "★4.91 · 자라섬 4분", name: "카츠오모이", summary: "가평읍 최고 평점을 자랑하는 프리미엄 수제 숙성 돈카츠 전문점.", tip: "등심·안심·치즈카츠가 겉바속촉으로 튀겨져 아이들과 함께하는 퇴소 점심 메뉴 1순위입니다.", addr: "경기 가평군 가평읍 석봉로191번길 15", tel: "031-582-9994", img: IMG.cutlet },
-            { id: 102, cat: "food", sub: "한식·일식·양식", badge: "★4.82 · 자라섬 3분", name: "송원잣두부집", summary: "고소한 가평 특산물 잣이 통째로 들어간 수제 잣두부전골·잣두부보쌈 맛집.", tip: "자극적이지 않고 담백·고소해 아침 겸 점심 해장 및 부모님·아이 동반 식사로 인기가 높습니다.", addr: "경기 가평군 가평읍 가화로 185", tel: "031-582-0544", img: IMG.korean },
-            { id: 103, cat: "food", sub: "한식·일식·양식", badge: "★4.79 · 자라섬 2분", name: "이화원 칼국수·만두", summary: "자라섬 입구 인근에서 만나는 깊고 진한 사골·해물 칼국수와 수제 만두전골 전문점.", tip: "11월 쌀쌀한 가을 캠핑 퇴소 직후 따뜻한 국물로 몸을 녹이기에 안성맞춤입니다.", addr: "경기 가평군 가평읍 자라섬로 38", tel: "031-581-1616", img: IMG.noodle },
-            { id: 104, cat: "food", sub: "한식·일식·양식", badge: "★4.76 · 자라섬 4분", name: "가평축협 한우명가", summary: "가평축협이 직영하여 믿고 먹는 1등급 한우 구이 및 진한 한우 갈비탕·육회비빔밥.", tip: "넓고 쾌적한 홀과 대형 주차장을 갖추고 있어 캠핑 짐이 있는 차량도 주차가 매우 편리합니다.", addr: "경기 가평군 가평읍 가화로 123", tel: "031-581-1592", img: IMG.meat },
-            { id: 105, cat: "food", sub: "한식·일식·양식", badge: "★4.74 · 자라섬 5분", name: "피제리아 가평화덕피자", summary: "참나무 화덕에서 갓 구워내는 쫄깃한 나폴리식 화덕피자와 생면 파스타 맛집.", tip: "전날 캠핑 바비큐와 다른 양식 메뉴가 당길 때 가족 외식 코스로 만족도가 매우 높습니다.", addr: "경기 가평군 가평읍 북한강변로 1044", tel: "031-582-7752", img: IMG.pizza },
-            { id: 106, cat: "food", sub: "한식·일식·양식", badge: "★4.71 · 자라섬 4분", name: "경춘국밥 가평본점", summary: "잡내 없이 푹 고아낸 진한 돼지국밥·수육국밥으로 아침 일찍 문을 여는 든든한 국밥집.", tip: "캠핑장 정리 후 따끈한 국밥 한 그릇으로 속을 든든하게 채우기 좋습니다.", addr: "경기 가평군 가평읍 가화로 148", tel: "031-582-9882", img: IMG.korean },
-            { id: 107, cat: "food", sub: "한식·일식·양식", badge: "★4.68 · 자라섬 6분", name: "동막골 감자옹심이", summary: "강원·가평식으로 빚어낸 쫀득한 생감자 옹심이와 들깨 메밀칼국수 별미집.", tip: "고소한 들깨 국물과 바삭한 감자전을 함께 곁들이면 남녀노소 모두 좋아합니다.", addr: "경기 가평군 가평읍 호반로 2545", tel: "031-582-5355", img: IMG.korean },
-            { id: 108, cat: "food", sub: "한식·일식·양식", badge: "★4.66 · 자라섬 5분", name: "우정본가 소갈비·냉면", summary: "달콤하고 부드러운 양념 소갈비·돼지갈비와 시원한 함흥냉면이 조화로운 가족 식당.", tip: "아이들이 먹기 좋은 부드러운 갈비탕과 어린이 메뉴가 잘 갖춰져 있습니다.", addr: "경기 가평군 가평읍 석봉로 210", tel: "031-582-2277", img: IMG.meat },
-            { id: 109, cat: "food", sub: "한식·일식·양식", badge: "★4.65 · 자라섬 18분", name: "언덕마루 가평잣두부집", summary: "100% 국산 콩과 가평 잣으로 매일 아침 직접 만드는 두부전골·두부버섯전골 명가.", tip: "아침고요수목원·잣향기푸른숲 방면으로 관광 동선을 잡으실 때 필수 들름 코스입니다.", addr: "경기 가평군 상면 수목원로 248", tel: "031-584-5368", img: IMG.korean },
+            { id: 101, cat: "food", sub: "한식·일식·양식", badge: "★4.90 · 자라섬 2분", name: "타이거카츠", summary: "자라섬 입구 자라섬로에 위치한 두툼한 숙성 수제 돈카츠 전문점.", tip: "바삭하고 육즙 가득한 등심·안심카츠로 캠핑 퇴소 직후 아이들과 점심 식사하기에 최고입니다.", addr: "경기 가평군 가평읍 자라섬로 25", tel: "0507-1491-0879", img: IMG.cutlet },
+            { id: 102, cat: "food", sub: "한식·일식·양식", badge: "★4.85 · 자라섬 4분", name: "유타카 돈까스", summary: "가평읍 시내에서 현지인과 여행객 모두에게 사랑받는 수제 고추치즈돈까스·히레까스 맛집.", tip: "고소한 치즈가 듬뿍 들어간 수제 돈까스와 우동 세트가 가족 외식 메뉴로 인기가 높습니다.", addr: "경기 가평군 가평읍 가화로 113", tel: "031-582-8125", img: IMG.cutlet },
+            { id: 103, cat: "food", sub: "한식·일식·양식", badge: "★4.82 · 자라섬 4분", name: "옹심이메밀칼국수", summary: "가평읍 장터길에서 만나는 쫀득한 감자옹심이와 구수한 메밀칼국수·만두 전문점.", tip: "11월 쌀쌀한 가을 캠핑 퇴소 후 따끈하고 진한 국물로 속을 녹이기에 안성맞춤입니다.", addr: "경기 가평군 가평읍 장터길 2", tel: "031-582-5355", img: IMG.noodle },
+            { id: 104, cat: "food", sub: "한식·일식·양식", badge: "★4.80 · 자라섬 2분", name: "가평축협 한우명가", summary: "자라섬·가평역 바로 옆! 가평축협이 직영하는 1등급 한우 구이 및 한우 갈비탕·설렁탕 명소.", tip: "매장 앞 무료 주차장이 매우 넓어 캠핑 짐을 실은 차량도 여유롭게 주차할 수 있습니다.", addr: "경기 가평군 가평읍 달전로 19", tel: "031-581-1592", img: IMG.meat },
+            { id: 105, cat: "food", sub: "한식·일식·양식", badge: "★4.78 · 자라섬 5분", name: "뚜띠쿠치나 가평점", summary: "화덕에서 구워낸 쫄깃한 도우의 피자와 크림·토마토 파스타를 선보이는 이탈리안 레스토랑.", tip: "캠핑 바비큐 다음 날 깔끔한 화덕피자와 파스타가 당길 때 가족 코스로 만족도가 높습니다.", addr: "경기 가평군 가평읍 호반로 2590-20", tel: "031-581-3356", img: IMG.pizza },
+            { id: 106, cat: "food", sub: "한식·일식·양식", badge: "★4.76 · 자라섬 2분", name: "토담식당", summary: "자라섬 길목 달전로에서 풍성한 산나물 보리밥 정식과 매콤달콤 제육두루치기를 내어주는 한식당.", tip: "아침·점심 부담 없이 든든한 집밥 스타일 한식을 맛볼 수 있어 부모님 동반 시 추천합니다.", addr: "경기 가평군 가평읍 달전로 24", tel: "031-582-8239", img: IMG.korean },
+            { id: 107, cat: "food", sub: "한식·일식·양식", badge: "★4.75 · 자라섬 5분", name: "가평돼지국밥", summary: "잡내 없이 진하게 우려낸 돈사골 육수의 돼지국밥과 야들야들한 수육 백반 전문점.", tip: "오전 일찍부터 영업하며 건물 뒤편 전용 주차장과 공영주차장을 편하게 이용할 수 있습니다.", addr: "경기 가평군 가평읍 호반로 2613", tel: "0507-1314-6449", img: IMG.korean },
+            { id: 108, cat: "food", sub: "한식·일식·양식", badge: "★4.74 · 자라섬 8분", name: "동기간", summary: "숲속 고즈넉한 한옥 별채에서 즐기는 가평 대표 토종닭백숙·닭볶음탕·감자전 명가.", tip: "깊고 진한 국물의 백숙과 바삭한 감자전으로 캠핑 피로를 든든하게 풀어보세요.", addr: "경기 가평군 가평읍 보납로 459-158", tel: "031-581-5570", img: IMG.korean },
+            { id: 109, cat: "food", sub: "한식·일식·양식", badge: "★4.73 · 자라섬 18분", name: "언덕마루 가평잣두부집", summary: "100% 국산 콩과 고소한 가평 잣을 넣어 매일 직접 만드는 수제 잣두부전골·두부보쌈 맛집.", tip: "아침고요수목원·잣향기푸른숲 방면으로 관광하실 때 꼭 들러야 할 대표 로컬 맛집입니다.", addr: "경기 가평군 상면 수목원로 248", tel: "031-584-5368", img: IMG.korean },
 
-            // [카페·베이커리 - 9곳 대폭 강화!]
-            { id: 110, cat: "food", sub: "카페·베이커리", badge: "★4.88 · 자라섬 1분", name: "가평잣빵 본점", summary: "자라섬 캠핑장 바로 앞! 100% 가평 특산물 잣을 듬뿍 넣어 구운 귀여운 잣모양 수제빵.", tip: "갓 구운 따끈한 잣빵과 잣우유·잣아이스크림은 캠핑 귀갓길 선물용으로도 최고입니다.", addr: "경기 가평군 가평읍 자라섬로 45", tel: "0507-1356-4501", img: IMG.bakery },
-            { id: 111, cat: "food", sub: "카페·베이커리", badge: "★4.86 · 자라섬 2분", name: "카페 코지 (제방길 카페)", summary: "자라섬 입구 북한강 제방 산책길 바로 옆, 탁 트인 정원과 수제 디저트가 매력적인 카페.", tip: "캠핑장에서 차로 2분 거리라 퇴소 후 여유롭게 커피와 크로플을 즐기기 좋습니다.", addr: "경기 가평군 가평읍 달전로 35", tel: "031-581-3350", img: IMG.coffee },
-            { id: 112, cat: "food", sub: "카페·베이커리", badge: "★4.85 · 자라섬 5분", name: "니드썸레스트 가평베이커리", summary: "소나무 정원과 넓은 잔디마당을 품은 자라섬 인근 감성 베이커리 & 브런치 카페.", tip: "소금빵과 가평 잣 크림라떼가 유명하며 야외 정원에서 아이들이 산책하기 좋습니다.", addr: "경기 가평군 가평읍 북한강변로 1054", tel: "031-582-8870", img: IMG.bakery },
-            { id: 113, cat: "food", sub: "카페·베이커리", badge: "★4.84 · 자라섬 8분", name: "골든트리 (리버뷰 대형카페)", summary: "건축상을 수상한 통유리 노출콘크리트 건축물과 파노라마 북한강 뷰가 압도적인 랜드마크 카페.", tip: "강변 잔디광장 포토존에서 인생샷을 남기고 시그니처 베이커리를 맛보세요.", addr: "경기 가평군 가평읍 북한강변로 326-124", tel: "0507-1324-0595", img: IMG.cafe },
-            { id: 114, cat: "food", sub: "카페·베이커리", badge: "★4.82 · 자라섬 10분", name: "리버레인 (북한강 베이커리)", summary: "전 층 통창으로 북한강 물결이 한눈에 내려다보이는 5층 규모의 프리미엄 베이커리 카페.", tip: "매일 아침 굽는 천연발효종 빵과 루프탑 리버뷰 테라스가 일품입니다.", addr: "경기 가평군 청평면 북한강로 2141-2", tel: "031-584-0068", img: IMG.cafe },
-            { id: 115, cat: "food", sub: "카페·베이커리", badge: "★4.80 · 자라섬 4분", name: "크래머리 브루어리 & 카페", summary: "가평역·자라섬 인근에서 유럽 정통 방식으로 만드는 수제 베이커리·프레첼 & 음료 라운지.", tip: "독일식 갓 구운 브레첼과 논알콜 에이드, 포장용 수제 캔음료도 인기가 높습니다.", addr: "경기 가평군 가평읍 오리나무길 16", tel: "031-581-2715", img: IMG.bakery },
-            { id: 116, cat: "food", sub: "카페·베이커리", badge: "★4.79 · 자라섬 6분", name: "더강 리버뷰카페", summary: "남이섬·자라섬 물줄기를 바로 눈앞에서 감상하는 수변 테라스 디저트 카페.", tip: "가평 잣 라떼와 수제 케이크를 먹으며 강변 물멍을 즐기기에 최적의 장소입니다.", addr: "경기 가평군 가평읍 북한강변로 998", tel: "031-582-7708", img: IMG.coffee },
-            { id: 117, cat: "food", sub: "카페·베이커리", badge: "★4.78 · 자라섬 12분", name: "카페 라쿠나", summary: "청평호반 물가 바로 앞에 자리해 유럽 호수 마을에 온 듯한 뷰를 선사하는 로스터리 카페.", tip: "호수 위 산책 데크 포토존과 진한 스페셜티 드립커피, 수제 타르트가 유명합니다.", addr: "경기 가평군 청평면 호반로 976", tel: "031-585-9992", img: IMG.cafe },
-            { id: 118, cat: "food", sub: "카페·베이커리", badge: "★4.76 · 자라섬 15분", name: "카페 플로레", summary: "유럽식 온실 정원과 계절 꽃, 고소한 화덕 빵이 가득한 정원형 베이커리 카페.", tip: "쁘띠프랑스·청평호반 드라이브 코스와 함께 들러 베이커리 브런치를 즐겨보세요.", addr: "경기 가평군 청평면 호반로 1094", tel: "031-585-5584", img: IMG.bakery },
+            // [카페·베이커리 - 9곳]
+            { id: 110, cat: "food", sub: "카페·베이커리", badge: "★4.88 · 자라섬 6분", name: "공잣소 베이커리카페", summary: "가평 특산물 잣과 감자로 구워내는 건강한 수제 잣빵·감자빵·전통한과 베이커리 카페.", tip: "용추계곡 초입에 위치해 퇴소 후 갓 구운 가평 수제 베이커리 선물세트를 구매하기 좋습니다.", addr: "경기 가평군 가평읍 용추로 242-61", tel: "031-582-8422", img: IMG.bakery },
+            { id: 111, cat: "food", sub: "카페·베이커리", badge: "★4.86 · 자라섬 4분", name: "커피쓰루 베이커리", summary: "자라섬·남이섬 인근에서 다양한 수제 베이커리와 스페셜티 커피를 즐기는 감성 카페.", tip: "달콤한 크로넛과 디저트 종류가 풍성해 아이들과 달콤한 티타임을 갖기 좋습니다.", addr: "경기 가평군 가평읍 북한강변로 1062-26", tel: "0507-1351-1652", img: IMG.coffee },
+            { id: 112, cat: "food", sub: "카페·베이커리", badge: "★4.85 · 자라섬 6분", name: "니드썸레스트", summary: "넓은 정원과 감각적인 인테리어, 포토존이 돋보이는 가평읍 대표 대형 정원 카페.", tip: "야외 잔디마당과 테라스 공간이 여유로워 가족 단위로 편안하게 쉬어가기 좋습니다.", addr: "경기 가평군 가평읍 경춘로 1859", tel: "031-582-8870", img: IMG.bakery },
+            { id: 113, cat: "food", sub: "카페·베이커리", badge: "★4.84 · 자라섬 10분", name: "골든트리", summary: "노출콘크리트 명품 건축물과 파노라마 북한강 리버뷰가 어우러진 가평 랜드마크 대형 카페.", tip: "강변 잔디광장 포토존에서 가족 인생샷을 남기고 시그니처 베이커리를 맛보세요.", addr: "경기 가평군 가평읍 북한강변로 326-124", tel: "0507-1324-0595", img: IMG.cafe },
+            { id: 114, cat: "food", sub: "카페·베이커리", badge: "★4.83 · 자라섬 9분", name: "더강 베이커리카페", summary: "북한강 수상 테라스와 탁 트인 강변 정원에서 구움과자·베이커리를 즐기는 리버뷰 카페.", tip: "휘낭시에·소금빵 등 매일 굽는 베이커리와 상큼한 착즙 에이드가 인기가 많습니다.", addr: "경기 가평군 가평읍 굴바우길 86", tel: "0507-1342-9327", img: IMG.cafe },
+            { id: 115, cat: "food", sub: "카페·베이커리", badge: "★4.82 · 자라섬 10분", name: "코미호미", summary: "북한강 바로 앞 푸른 잔디 정원에서 피크닉 감성을 만끽할 수 있는 키즈 친화 카페.", tip: "시그니처 달고나라떼와 에이드가 유명하며 넓은 정원에서 아이들과 여유로운 시간을 보내보세요.", addr: "경기 가평군 가평읍 호반로 1646", tel: "0507-1307-3546", img: IMG.coffee },
+            { id: 116, cat: "food", sub: "카페·베이커리", badge: "★4.81 · 자라섬 14분", name: "리버레인", summary: "전 층 통유리창 너머로 북한강 물결이 시원하게 펼쳐지는 5층 규모의 베이커리 카페.", tip: "천연발효종 수제 빵과 엘리베이터가 완비된 쾌적한 리버뷰 좌석이 매력적입니다.", addr: "경기 가평군 청평면 북한강로 2141", tel: "010-3936-2141", img: IMG.cafe },
+            { id: 117, cat: "food", sub: "카페·베이커리", badge: "★4.80 · 자라섬 16분", name: "크래머리 브루어리", summary: "유럽 정통 양조장과 스모크하우스 베이커리·학센·프레첼을 함께 만나는 이색 미식 공간.", tip: "갓 구운 독일식 브레첼과 수제 소시지 플래터, 포장용 수제 캔음료가 선물용으로 인기입니다.", addr: "경기 가평군 상면 청군로 429", tel: "031-585-5977", img: IMG.bakery },
+            { id: 118, cat: "food", sub: "카페·베이커리", badge: "★4.78 · 자라섬 15분", name: "카페 플로레", summary: "청평 에덴벚꽃길 초입, 울창한 나무와 유럽풍 정원이 아름다운 브런치 & 디저트 카페.", tip: "수제 케이크와 향긋한 커피를 마시며 귀갓길 드라이브 휴식을 취하기 좋습니다.", addr: "경기 가평군 청평면 에덴벚꽃길 39-1", tel: "031-585-3453", img: IMG.bakery },
 
-            // [닭갈비·막국수 - 핵심 명소 6곳으로 비중 균형 조절]
-            { id: 119, cat: "food", sub: "닭갈비·막국수", badge: "★4.85 · 자라섬 3분", name: "가평잣고을닭갈비", summary: "자라섬 인근 네이버 평점 상위권! 고소한 가평 잣이 듬뿍 올라간 숯불·철판 닭갈비.", tip: "아이들을 위한 간장 닭갈비와 치즈 퐁듀, 잣 막국수 조합이 가장 인기 있습니다.", addr: "경기 가평군 가평읍 달전로 29", tel: "031-582-7227", img: IMG.dakgalbi },
-            { id: 120, cat: "food", sub: "닭갈비·막국수", badge: "★4.81 · 자라섬 5분", name: "송원막국수 본점", summary: "수십 년 전통 가평읍 터줏대감으로 구수한 메밀향과 비법 양념장이 돋보이는 막국수 명가.", tip: "비빔막국수에 고소한 들기름과 육수를 살짝 부어 야들야들한 편육과 함께 드셔보세요.", addr: "경기 가평군 가평읍 가화로 76-1", tel: "031-582-1408", img: IMG.noodle },
-            { id: 121, cat: "food", sub: "닭갈비·막국수", badge: "★4.78 · 자라섬 2분", name: "자라섬닭갈비 막국수", summary: "자라섬 캠핑장에서 나와 도보·차량 2분이면 도착하는 철판 볶음밥 맛집.", tip: "신선한 국내산 계육만 사용하며 마지막에 날치알·치즈 볶음밥까지 꼭 맛보세요.", addr: "경기 가평군 가평읍 자라섬로 31", tel: "031-581-5989", img: IMG.dakgalbi },
-            { id: 122, cat: "food", sub: "닭갈비·막국수", badge: "★4.77 · 자라섬 5분", name: "명물닭갈비 (남이섬입구)", summary: "초벌 참숯 향이 배어든 부드러운 숯불닭갈비와 새콤달콤 막국수 전문점.", tip: "연기 걱정 없이 깔끔하게 구워 먹을 수 있어 가족 단위 여행객에게 호평받고 있습니다.", addr: "경기 가평군 가평읍 북한강변로 1041", tel: "031-582-6668", img: IMG.dakgalbi },
-            { id: 123, cat: "food", sub: "닭갈비·막국수", badge: "★4.75 · 자라섬 7분", name: "금강막국수", summary: "직접 뽑은 메밀면과 담백한 수육, 바삭한 메밀전병으로 현지인이 추천하는 막국수집.", tip: "자극적이지 않은 동치미 물막국수가 일품이라 어린이도 맛있게 먹을 수 있습니다.", addr: "경기 가평군 가평읍 경춘로 1889", tel: "031-582-8088", img: IMG.noodle },
-            { id: 124, cat: "food", sub: "닭갈비·막국수", badge: "★4.74 · 자라섬 16분", name: "칠오닭갈비 본점", summary: "가평을 대표하는 대형 숯불닭갈비 명소로 치즈 숯불닭갈비와 메밀 막국수가 유명.", tip: "주차장이 매우 넓고 회전율이 빨라 주말 점심시간에도 쾌적하게 이용 가능합니다.", addr: "경기 가평군 상면 수목원로 68", tel: "031-585-7579", img: IMG.dakgalbi },
+            // [닭갈비·막국수 - 6곳]
+            { id: 119, cat: "food", sub: "닭갈비·막국수", badge: "★4.85 · 자라섬 4분", name: "남이섬꼬꼬춘천닭갈비", summary: "방문자 리뷰 수천 건이 증명하는 자라섬·남이섬 인근 대표 숯불·철판 닭갈비 & 잣막국수 맛집.", tip: "고소한 가평 잣 물막국수와 부드러운 닭갈비 조합이 일품이며 전용 주차장이 넓습니다.", addr: "경기 가평군 가평읍 북한강변로 1045", tel: "0507-1416-2129", img: IMG.dakgalbi },
+            { id: 120, cat: "food", sub: "닭갈비·막국수", badge: "★4.83 · 자라섬 4분", name: "송원막국수", summary: "줄 서서 먹는 가평읍 대표 노포 맛집으로 구수한 메밀면과 비법 양념장·수육이 일품인 명가.", tip: "특제 양념 비빔막국수에 살얼음 육수를 살짝 부어 고소한 메밀 향을 만끽해 보세요.", addr: "경기 가평군 가평읍 가화로 76-1", tel: "031-582-1408", img: IMG.noodle },
+            { id: 121, cat: "food", sub: "닭갈비·막국수", badge: "★4.80 · 자라섬 5분", name: "남이섬 풍경닭갈비", summary: "3대째 이어온 깊은 양념 맛과 치즈 철판닭갈비·볶음밥으로 호평받는 가족 외식 명소.", tip: "아이들이 좋아하는 달콤한 치즈 사리와 날치알 볶음밥으로 마무리해 보세요.", addr: "경기 가평군 가평읍 북한강변로 1103", tel: "0507-1368-3552", img: IMG.dakgalbi },
+            { id: 122, cat: "food", sub: "닭갈비·막국수", badge: "★4.78 · 자라섬 4분", name: "조무락닭갈비", summary: "소금·간장·고추장 3가지 맛 닭갈비와 고소한 들기름 막국수, 바삭한 감자전이 유명한 맛집.", tip: "맵지 않은 소금·간장 닭갈비가 준비되어 있어 어린이 동반 가족에게 특히 인기가 높습니다.", addr: "경기 가평군 가평읍 북한강변로 1068", tel: "031-582-6300", img: IMG.dakgalbi },
+            { id: 123, cat: "food", sub: "닭갈비·막국수", badge: "★4.76 · 설악IC 인근", name: "금강막국수 본점", summary: "50년 전통을 이어온 막국수 노포로 맷돌 메밀면과 담백한 수육·녹두전이 사랑받는 현지인 맛집.", tip: "서울양양고속도로 설악IC 길목에 위치해 귀갓길 점심 코스로 들르기 매우 편리합니다.", addr: "경기 가평군 설악면 음동길 23", tel: "031-584-8387", img: IMG.noodle },
+            { id: 124, cat: "food", sub: "닭갈비·막국수", badge: "★4.75 · 수목원 길목", name: "칠오닭갈비 본점", summary: "참숯에 구워 불향이 살아있는 숯불닭갈비와 메밀 막국수로 유명한 상면 대표 대형 맛집.", tip: "대형 주차장과 넓은 좌석을 갖추어 주말 점심에도 회전이 빠르고 쾌적합니다.", addr: "경기 가평군 상면 수목원로 68", tel: "031-585-7579", img: IMG.dakgalbi },
 
-            // ================= 3. 캠핑장 (18곳 - 땡큐캠핑 입점 인기 캠핑장 + 가평 명돈골캠핑장 포함, 접속/탭 클릭마다 랜덤 순서 노출) =================
-            { id: 201, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 키즈&계곡", name: "가평 명돈골캠핑장", summary: "청정 북면 명지산·논남기 계곡 옆 숲속에 자리한 가족 친화형 힐링 오토캠핑장.", tip: "사계절 썰매장·실내 키즈존·넓은 타프존 등 아이들을 위한 부대시설이 훌륭해 가족 캠퍼들에게 인기가 높습니다.", addr: "경기 가평군 북면 논남기길 19-36", tel: "010-6778-1199", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/view.hbb?cseq=1614" },
-            { id: 202, cat: "camp", sub: "공영·대형명소", badge: "땡큐캠핑 대표 · 캠핑스쿨", name: "가평 자라섬 캠핑장", summary: "북한강 한가운데 드넓은 잔디광장과 카라반·오토캠핑 사이트를 갖춘 대한민국 대표 캠핑 성지.", tip: "평탄한 잔디·데크와 깨끗한 편의시설, 남도 꽃정원 산책로까지 갖춰 사계절 사랑받는 명소입니다.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8029", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EC%9E%90%EB%9D%BC%EC%84%AC" },
-            { id: 203, cat: "camp", sub: "공영·대형명소", badge: "땡큐캠핑 추천 · 청정숲", name: "연인산 다목적캠핑장", summary: "연인산 도립공원 백둔계곡 상류에 위치한 쾌적한 시설의 공영 오토·캐빈 캠핑장.", tip: "데크 간격이 넓고 주변 잣나무 산책로가 조용해 여유로운 숲속 캠핑을 원할 때 제격입니다.", addr: "경기 가평군 북면 백둔로 441", tel: "031-8078-8068", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EC%97%B0%EC%9D%B8%EC%82%B0" },
-            { id: 204, cat: "camp", sub: "공영·대형명소", badge: "땡큐캠핑 추천 · 조종천변", name: "가평 산장관광지 캠핑장", summary: "맑은 조종천 물줄기와 울창한 송림이 감싸고 있는 가평군 대표 국민관광지 야영장.", tip: "산책로와 잔디광장, 글램핑·오토캠핑 구역이 잘 정비되어 초보 캠퍼도 편하게 머물 수 있습니다.", addr: "경기 가평군 상면 덕현리 402-1", tel: "031-8078-8065", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EC%82%B0%EC%9E%A5%EA%B4%80%EA%B4%91%EC%A7%80" },
-            { id: 205, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 1급수계곡", name: "가평 용추캠핑장", summary: "가평 8경 용추계곡 맑은 물소리를 바로 옆에서 들으며 쉬어가는 계곡형 오토캠핑장.", tip: "자라섬·가평역에서 차량 15분 내외로 접근성이 뛰어나고 가을 단풍 풍경이 아름답습니다.", addr: "경기 가평군 가평읍 용추로 295", tel: "031-581-1777", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89+%EC%9A%A9%EC%B6%94" },
-            { id: 206, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 잣나무숲", name: "가평 호명산 잣나무캠핑장", summary: "하늘 높이 뻗은 아름드리 잣나무 숲 그늘 아래 파쇄석·데크 사이트가 펼쳐진 감성 캠핑장.", tip: "솔향기와 피톤치드가 가득하며 저녁노을과 별빛 조명이 어우러진 숲속 야경이 일품입니다.", addr: "경기 가평군 청평면 상지로 215", tel: "031-584-1152", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%ED%98%B8%EB%AA%85%EC%82%B0" },
-            { id: 207, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 인기 · 키즈존완비", name: "가평 둥지오토캠핑장", summary: "방방이(트램펄린), 놀이시설과 넓은 사이트 간격을 갖춘 상면 가족 전용 오토캠핑장.", tip: "아침고요수목원·사계절썰매장과 가까워 1박 2일 아이 동반 여행 베이스캠프로 인기가 많습니다.", addr: "경기 가평군 상면 임초밤안골로 189", tel: "010-5275-8595", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EB%91%A5%EC%A7%80" },
-            { id: 208, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 백둔계곡", name: "가평 중바위캠핑장", summary: "연인산 자락 백둔계곡의 커다란 기암과 맑은 시냇물을 품은 아늑한 계곡 캠핑장.", tip: "나무 그늘이 풍부하고 사이트가 계단식으로 나뉘어 프라이빗한 캠핑을 즐길 수 있습니다.", addr: "경기 가평군 북면 백둔로 652", tel: "031-582-9234", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EC%A4%91%EB%B0%94%EC%9C%84" },
-            { id: 209, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 명지계곡", name: "가평 명지산 카라반&오토캠핑장", summary: "명지산 군립공원 입구 청정 계곡 옆에서 오토캠핑과 카라반을 함께 즐길 수 있는 캠핑장.", tip: "가을 단풍철 산세가 절경이며 텐트 없는 지인 가족과 동반 여행하기에도 편리합니다.", addr: "경기 가평군 북면 가화로 2258", tel: "031-582-5508", img: IMG.glamp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EB%AA%85%EC%A7%80%EC%82%B0" },
-            { id: 210, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 인기 · 감성글램핑", name: "가평 하늘숲글램핑 & 캠핑장", summary: "잣나무 숲속에 개별 바비큐장과 냉난방 시설을 완비해 사계절 아늑한 감성 캠핑 공간.", tip: "11월 늦가을에도 따뜻한 난방 시설 덕분에 초보 가족이 가볍게 방문하기 좋습니다.", addr: "경기 가평군 상면 재넘이길 152", tel: "031-585-7798", img: IMG.glamp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89+%ED%95%98%EB%8A%98%EC%88%B2" },
-            { id: 211, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 조무락계곡", name: "가평 조무락골 캠핑장", summary: "화악산과 석룡산 사이 조무락계곡 최상류 청정 자연 속에 자리 잡은 힐링 야영장.", tip: "밤하늘에 쏟아지는 별빛과 맑은 계곡 물소리로 도심 스트레스를 완전히 잊게 해줍니다.", addr: "경기 가평군 북면 화악산로 996", tel: "031-582-6345", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EC%A1%B0%EB%AC%B4%EB%9D%BD" },
-            { id: 212, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 유명산숲", name: "가평 솔향기 캠핑장", summary: "유명산 자락 울창한 소나무와 참나무 숲속에 조성된 조용하고 매너 타임이 철저한 캠핑장.", tip: "서울·수도권에서 설악IC로 빠르게 접근 가능해 주말 1박 2일 캠핑지로 인기가 높습니다.", addr: "경기 가평군 설악면 유명산길 122-18", tel: "031-585-3553", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89+%EC%86%94%ED%96%A5%EA%B8%B0" },
-            { id: 213, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 인기 · 리버뷰캠핑", name: "가평 북한강 리버뷰캠핑장", summary: "탁 트인 북한강 물결을 바라보며 불멍과 바비큐를 즐길 수 있는 수변 오토캠핑장.", tip: "해 질 녘 강물 위로 붉게 번지는 노을 풍경이 아름다워 감성 캠퍼들에게 사랑받습니다.", addr: "경기 가평군 청평면 북한강로 1950", tel: "031-584-8253", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89+%EB%A6%AC%EB%B2%84" },
-            { id: 214, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 칼봉산계곡", name: "가평 경반분교 솔캠핑장", summary: "칼봉산 경반계곡 인근 옛 산골 분교의 정취와 고즈넉한 숲을 간직한 자연 친화 캠핑장.", tip: "가평읍 시내에서 가까워 마트 장보기와 주변 맛집 탐방이 매우 수월합니다.", addr: "경기 가평군 가평읍 경반안로 355", tel: "031-582-4012", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B2%BD%EB%B0%98" },
-            { id: 215, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 인기 · 키즈놀이터", name: "가평 꿈에그린 키즈캠핑장", summary: "어린이 전용 놀이시설과 깔끔한 개별 화장실·샤워실 옵션을 갖춘 맞춤형 가족 캠핑장.", tip: "아이들이 안전하게 뛰어놀 수 있는 중앙 광장 구조라 텐트에서 한눈에 지켜볼 수 있습니다.", addr: "경기 가평군 조종면 운악청계로 390", tel: "031-585-4862", img: IMG.glamp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89+%ED%82%A4%EC%A6%88" },
-            { id: 216, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 어비계곡", name: "가평 어비산장 오토캠핑장", summary: "설악면 어비계곡 맑은 시냇물과 잣나무 그늘이 어우러진 아담하고 정겨운 숲속 캠핑장.", tip: "유명산 자연휴양림과 어비계곡 산책 코스를 함께 둘러보기에 좋은 위치입니다.", addr: "경기 가평군 설악면 어비산길 158", tel: "031-584-7231", img: IMG.camp, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EC%96%B4%EB%B9%84" },
-            { id: 217, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 인기 · 화악산청정", name: "가평 무릉도원 캠핑장", summary: "화악산 계곡 물줄기를 따라 넓은 파쇄석 사이트와 평상이 배치된 청정 자연 캠핑장.", tip: "온수 시설과 개수대 관리가 깔끔하며 가을 단풍 시즌 풍광이 특히 뛰어납니다.", addr: "경기 가평군 북면 화악산로 455-20", tel: "031-582-1288", img: IMG.camp2, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89+%EB%AC%B4%EB%A6%89%EB%8F%84%EC%9B%90" },
-            { id: 218, cat: "camp", sub: "공영·대형명소", badge: "산림청 국립 · 데크야영", name: "유명산 자연휴양림 야영장", summary: "울창한 참나무·낙엽송 숲속에서 즐기는 대한민국 대표 국립 자연휴양림 데크 캠핑장.", tip: "휴양림 내 자생식물원과 숲해설 프로그램을 아이들과 함께 무료로 체험해 보세요.", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.forest, tqUrl: "https://www.thankqcamping.com/resv/list.hbb?search_keyword=%EA%B0%80%ED%8F%89" },
+            // ================= 3. 캠핑장 (18곳 - 전수 땡큐캠핑 실제 예약 가능 가평 캠핑장 고유 cseq 링크 100% 직결!) =================
+            { id: 201, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 키즈&계곡", name: "명돈골 캠핑장", summary: "청정 북면 논남기 계곡 옆 숲속에 자리한 오토캠핑·루프탑·타프존·이지캠핑 복합 힐링 캠핑장.", tip: "실내 키즈존·계절 썰매장·물멍존·숲멍존 등 가족 맞춤형 사이트가 다양하게 운영됩니다.", addr: "경기 가평군 북면 논남기길 19-36", tel: "010-6778-1199", img: "https://i.postimg.cc/HWRPgyLt/myeongdongol-kaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1614" },
+            { id: 202, cat: "camp", sub: "공영·대형명소", badge: "땡큐캠핑 예약 · 캠핑스쿨", name: "자라섬캠핑장", summary: "북한강 한가운데 드넓은 잔디광장과 오토캠핑·카라반 사이트를 갖춘 대한민국 대표 수변 캠핑장.", tip: "평탄한 사이트와 깔끔한 부대시설, 자라섬 남도 꽃정원 산책로가 연결되어 사계절 인기가 높습니다.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8029", img: "https://i.postimg.cc/sfq0rh2T/jalaseomkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1" },
+            { id: 203, cat: "camp", sub: "공영·대형명소", badge: "땡큐캠핑 예약 · 청정숲", name: "연인산다목적캠핑장", summary: "연인산 백둔계곡 상류에 조성된 쾌적한 공영 오토캠핑·캐빈하우스·편백하우스 캠핑 단지.", tip: "사이트 간격이 넉넉하고 숲 산책로가 잘 가꾸어져 여유로운 자연 휴식을 원하는 분께 추천합니다.", addr: "경기 가평군 북면 백둔로 441", tel: "031-8078-8068", img: "https://i.postimg.cc/fWpgN9bB/yeon-insandamogjeogkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=9" },
+            { id: 204, cat: "camp", sub: "공영·대형명소", badge: "땡큐캠핑 예약 · 조종천변", name: "산장관광지 캠핑장", summary: "맑은 조종천 물줄기와 울창한 소나무 숲이 감싸고 있는 가평군 대표 국민관광지 캠핑장.", tip: "오토캠핑·카라반·펜션 구역과 넓은 잔디 산책로가 어우러져 초보 캠퍼도 편하게 머물 수 있습니다.", addr: "경기 가평군 상면 덕현산장길 71", tel: "031-8078-8052", img: "https://i.postimg.cc/nVgwJDLT/sanjang-gwangwangji.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=789" },
+            { id: 205, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 화악천뷰", name: "가평뷰캠핑장", summary: "사이트 바로 앞 맑고 넓은 화악천 계곡 뷰를 바라보며 힐링할 수 있는 북면 인기 오토캠핑장.", tip: "청결한 신축급 편의시설과 시원하게 트인 수변 전망 덕분에 가족 캠퍼 만족도가 높습니다.", addr: "경기 가평군 북면 화악산로 270", tel: "010-9139-1950", img: "https://i.postimg.cc/BZkw0Kv5/gapyeongbyukaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=13572" },
+            { id: 206, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 예약 · 놀이&계곡", name: "우리들캠핑장&글램핑", summary: "깨끗한 화악천 계곡과 방방이·정글짐·미니골프 등 다양한 어린이 놀거리를 갖춘 가족 캠핑장.", tip: "오토캠핑 파쇄석·데크부터 글램핑까지 선택 폭이 넓어 재방문율이 매우 높은 캠핑장입니다.", addr: "경기 가평군 북면 화악산로 245", tel: "010-2261-8138", img: "https://i.postimg.cc/1R2YQqzW/ulideulkaempingjang-geullaemping.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=2069" },
+            { id: 207, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 명지계곡", name: "가평 대가캠핑유원지", summary: "북면 제령리 맑고 깊은 계곡 물줄기를 끼고 넓은 그늘 사이트가 조성된 전통 인기 캠핑장.", tip: "수려한 기암절벽 계곡 풍경과 넉넉한 공간으로 여름 물놀이와 가을 단풍 캠핑 모두 훌륭합니다.", addr: "경기 가평군 북면 가화로 1073-100", tel: "010-7188-5119", img: "https://i.postimg.cc/QNwn3TMF/gapyeong-daegakaemping-yuwonji.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=3647" },
+            { id: 208, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 예약 · 운악산숲", name: "녹천캠핑글램핑", summary: "운악산 인근 잣나무 숲에 둘러싸여 타프 파쇄석·천연잔디 데크·패밀리 글램핑을 모두 갖춘 캠핑장.", tip: "장비 대여와 이지캠핑, 글램핑 하우스까지 운영해 장비 없는 지인 가족과 함께 가기 좋습니다.", addr: "경기 가평군 조종면 운악청계로333번길 55-19", tel: "010-2094-1956", img: "https://i.postimg.cc/wxZbpmBV/nogcheonkaemping-geullaemping.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1841" },
+            { id: 209, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 연인산자락", name: "가평 캠핑스마일", summary: "연인산 자락 조종면 마일리의 고즈넉한 숲속에서 여유로운 휴식을 선사하는 힐링 오토캠핑장.", tip: "깔끔하게 관리되는 시설과 조용한 매너타임 운영으로 편안한 숲속 불멍을 즐길 수 있습니다.", addr: "경기 가평군 조종면 연인산로474번길 91-27", tel: "010-8863-0307", img: "https://i.postimg.cc/2jMXDZ5v/gapyeong-kaempingseumail.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1964" },
+            { id: 210, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 마운틴뷰", name: "청평하늘캠프타운", summary: "청평면 탁 트인 산자락 전망대에서 아침 운해와 밤하늘 별빛을 감상하는 오토캠핑장.", tip: "서울·수도권에서 접근성이 뛰어나며 시원하게 열리는 마운틴 뷰가 일품입니다.", addr: "경기 가평군 청평면 덕현산장길 11-193", tel: "010-8025-8476", img: "https://i.postimg.cc/HsMvskJX/cheongpyeonghaneulkaempeutaun.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=3950" },
+            { id: 211, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 설악IC인근", name: "가평 별빛오토캠핑장", summary: "설악면 묵안리 청정 자연 속에서 쏟아지는 밤하늘 별빛과 함께 쉬어가는 고캠핑 인증 야영장.", tip: "설악IC에서 가까워 이동이 편리하며 조용하고 아늑한 분위기로 가족 캠퍼에게 사랑받습니다.", addr: "경기 가평군 설악면 묵안로 219-15", tel: "010-7238-8804", img: "https://i.postimg.cc/Y2ZyHWSh/gapyeong-byeolbich-otokaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1637" },
+            { id: 212, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 밤나무그늘", name: "가평밤나무숲캠핑장", summary: "화악산 자락 울창한 밤나무 숲 그늘과 맑은 공기를 품은 자연 친화형 오토캠핑장.", tip: "가을철 알밤과 단풍 정취가 가득하며 계곡 물소리를 들으며 조용히 힐링하기 좋습니다.", addr: "경기 가평군 북면 화악산로 686-57", tel: "010-4330-8834", img: "https://i.postimg.cc/h463BdG9/gapyeongbamnamusupkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4248" },
+            { id: 213, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 예약 · 느티나무숲", name: "가평은빛물결캠핑장", summary: "40년 수령 느티나무 500그루가 만드는 풍성한 숲그늘과 리뉴얼된 깔끔한 시설의 캠핑장.", tip: "아침고요수목원 인근에 위치해 있으며 나무 그늘 아래 해먹을 걸고 쉬기 좋습니다.", addr: "경기 가평군 조종면 대보리 506-1", tel: "010-6764-5061", img: "https://i.postimg.cc/9XKNh7fd/gapyeong-eunmichmulgyeolkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4084" },
+            { id: 214, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 운악산인근", name: "가평다온캠핑장", summary: "운악산 출렁다리 인근 청정 계곡과 산림 속에 자리 잡은 깔끔한 분위기의 오토캠핑장.", tip: "깨끗한 온수 개수대·샤워실 관리가 돋보이며 운악산 가을 단풍 산책과 연계하기 좋습니다.", addr: "경기 가평군 조종면 운악청계로 351-42", tel: "010-3485-8253", img: "https://i.postimg.cc/pV41HFdK/gapyeongdaonkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=16444" },
+            { id: 215, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 자연폭포", name: "가평 무릉도원캠핑장", summary: "상면 축령산·수목원 인근 자연폭포와 맑은 계곡, 산새소리가 어우러진 가족 휴양 캠핑장.", tip: "아침고요수목원·사계절썰매장과 가까워 1박 2일 가평 관광 코스와 함께 즐기기 좋습니다.", addr: "경기 가평군 상면 임초밤안골로 205", tel: "010-8321-6607", img: "https://i.postimg.cc/xjhF2zdk/gapyeong-muleungdowonkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=2207" },
+            { id: 216, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 예약 · 잔디운동장", name: "가평 캠플레이캠핑장", summary: "중앙 인조잔디 운동장과 사이트별 단독 펜스 울타리를 갖춰 아이와 반려견이 안전한 캠핑장.", tip: "16개 사이트 소규모로 조용하게 운영되며 바로 옆 계곡과 잣나무 숲 산책로가 연결됩니다.", addr: "경기 가평군 상면 비룡로 1610-15", tel: "010-4947-3333", img: "https://i.postimg.cc/SQ3thMKM/gapyeong-kaempeulleikaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=2064" },
+            { id: 217, cat: "camp", sub: "계곡·숲속오토", badge: "땡큐캠핑 예약 · 칼봉산계곡", name: "가평 케이캠핑장", summary: "자라섬·남이섬에서 차량 10분 거리! 칼봉산 자연휴양림 청정 계곡 앞에 자리한 대형 사이트 캠핑장.", tip: "원룸형 객실도 함께 운영하여 부모님 모시고 가는 대가족 캠핑에도 매우 편리합니다.", addr: "경기 가평군 가평읍 경반안로 229", tel: "010-2210-1357", img: "https://i.postimg.cc/c43k4LKM/keikaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=17897" },
+            { id: 218, cat: "camp", sub: "키즈·글램핑", badge: "땡큐캠핑 예약 · 개별화장실", name: "가평 더캠프카라반글램핑", summary: "전 객실 내부 개별 화장실·샤워실과 넉넉한 난방 시설을 완비한 신축급 카라반·글램핑장.", tip: "방방이(트램펄린)와 넓은 마당이 있어 11월 늦가을에도 아이들과 따뜻하고 편하게 캠핑을 즐길 수 있습니다.", addr: "경기 가평군 설악면 한서로156번길 12-62", tel: "010-3238-3917", img: "https://i.postimg.cc/kMzhmb5D/gapyeong-deokaempeukalabangeullaemping.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=4164" },
 
-            // ================= 4. 관광·문화 (18곳 - 공식 목차 18곳 전수 포함 + 네이버 플레이스 평점 높은순 & 자라섬 가까운 순 정렬) =================
-            { id: 301, cat: "tour", sub: "수목원·자연테마", badge: "★4.89 · 자라섬 1분", name: "자라섬 (남도 꽃정원)", summary: "캠핑장 바로 옆! 가을 백일홍·핑크뮬리·구절초가 끝없이 펼쳐지는 북한강 생태 정원.", tip: "캠핑 퇴소 전후로 평탄한 강변 산책로를 따라 걸으며 가을꽃 가족사진을 남겨보세요.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-580-2700", img: IMG.island },
+            // ================= 4. 관광·문화 (18곳 - 공식 목차 18곳 전수 포함 & 정확한 도로명주소 검증) =================
+            { id: 301, cat: "tour", sub: "수목원·자연테마", badge: "★4.89 · 자라섬 1분", name: "자라섬 (남도 꽃정원)", summary: "캠핑장 바로 옆! 가을 백일홍·핑크뮬리·구절초가 끝없이 펼쳐지는 북한강 생태 정원.", tip: "캠핑 퇴소 전후로 평탄한 강변 산책로와 출렁다리를 따라 걸으며 가족사진을 남겨보세요.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-580-2700", img: IMG.island },
             { id: 302, cat: "tour", sub: "수목원·자연테마", badge: "★4.87 · 자라섬 5분", name: "남이섬", summary: "노란 은행나무길과 붉은 단풍, 메타세쿼이아길이 그림처럼 펼쳐지는 대한민국 대표 섬 관광지.", tip: "선착장에서 배로 5분이면 입도 가능하며 하늘자전거·나눔열차 등 아이들 즐길 거리가 풍부합니다.", addr: "경기 가평군 가평읍 북한강변로 1024", tel: "031-580-8114", img: IMG.autumn },
-            { id: 303, cat: "tour", sub: "수목원·자연테마", badge: "★4.82 · 자라섬 1분", name: "이화원 나비스토리", summary: "자라섬 캠핑장 바로 옆 온실에서 사계절 열대식물과 한국 자생식물을 만나는 생태 식물원.", tip: "실내 온실이라 날씨와 상관없이 따뜻하게 관람하며 커피나 유자차 한 잔의 여유도 즐길 수 있습니다.", addr: "경기 가평군 가평읍 자라섬로 64", tel: "031-581-0228", img: IMG.garden },
+            { id: 303, cat: "tour", sub: "수목원·자연테마", badge: "★4.82 · 자라섬 1분", name: "이화원 나비스토리", summary: "자라섬 캠핑장 바로 옆 온실에서 사계절 열대식물과 한국 자생식물을 만나는 생태 식물원.", tip: "실내 온실이라 날씨와 상관없이 따뜻하게 관람하며 온실 카페의 여유도 즐길 수 있습니다.", addr: "경기 가평군 가평읍 자라섬로 64", tel: "031-581-0228", img: IMG.garden },
             { id: 304, cat: "tour", sub: "레저·액티비티", badge: "★4.81 · 자라섬 4분", name: "가평레일파크", summary: "북한강 철교 위를 시원하게 가로지르며 강바람과 단풍을 만끽하는 전동 레일바이크.", tip: "전동 모터 보조 방식이라 힘들지 않게 페달을 밟으며 북한강 30m 상공 철교 뷰를 감상할 수 있습니다.", addr: "경기 가평군 가평읍 장터길 14", tel: "031-582-7787", img: IMG.rail },
-            { id: 305, cat: "tour", sub: "레저·액티비티", badge: "★4.80 · 자라섬 5분", name: "짚와이어 (자라섬·남이섬)", summary: "80m 높이 타워에서 북한강 상공을 가르며 자라섬과 남이섬으로 날아가는 짜릿한 활강 레저.", tip: "대기 시간 없이 하늘 위에서 가을 자라섬 전경을 한눈에 내려다보며 남이섬으로 바로 입장할 수 있습니다.", addr: "경기 가평군 가평읍 북한강변로 1024", tel: "031-582-8091", img: IMG.lake2 },
-            { id: 306, cat: "tour", sub: "수목원·자연테마", badge: "★4.88 · 자라섬 22분", name: "아침고요수목원", summary: "축령산 자락 20여 개 테마 정원에 가을 국화와 단풍, 겨울 별빛축제가 이어지는 명품 수목원.", tip: "서화연 연못과 출렁다리 구름다리가 대표 포토존이며 평탄한 산책로가 잘 정비되어 있습니다.", addr: "경기 가평군 상면 수목원로 432", tel: "1544-6703", img: IMG.garden },
+            { id: 305, cat: "tour", sub: "레저·액티비티", badge: "★4.80 · 자라섬 5분", name: "짚와이어 (자라섬·남이섬)", summary: "80m 높이 타워에서 북한강 상공을 가르며 자라섬과 남이섬으로 날아가는 짜릿한 활강 레저.", tip: "하늘 위에서 가을 자라섬 전경을 한눈에 내려다보며 남이섬으로 바로 입장할 수 있습니다.", addr: "경기 가평군 가평읍 북한강변로 1024", tel: "031-582-8091", img: IMG.lake2 },
+            { id: 306, cat: "tour", sub: "수목원·자연테마", badge: "★4.88 · 자라섬 22분", name: "아침고요수목원", summary: "축령산 자락 20여 개 테마 정원에 가을 국화와 단풍, 겨울 별빛축제가 이어지는 명품 수목원.", tip: "서화연 연못과 출렁다리가 대표 포토존이며 평탄한 산책로가 잘 정비되어 있습니다.", addr: "경기 가평군 상면 수목원로 432", tel: "1544-6703", img: IMG.garden },
             { id: 307, cat: "tour", sub: "수목원·자연테마", badge: "★4.86 · 자라섬 24분", name: "경기도 잣향기푸른숲", summary: "수령 80년 이상 잣나무 군락지에서 목공 체험과 치유 산책을 즐기는 경기도 대표 산림휴양지.", tip: "축령백림 데크길과 잣박물관, 화전민 마을 재현 공간을 아이들과 함께 둘러보세요.", addr: "경기 가평군 상면 축령로 289-146", tel: "031-8008-6769", img: IMG.forest },
-            { id: 308, cat: "tour", sub: "레저·액티비티", badge: "★4.78 · 자라섬 14분", name: "짚라인가평(주)", summary: "칼봉산 자연휴양림 울창한 원시림 계곡 사이를 8개 코스로 연속 비행하는 숲속 어드벤처.", tip: "전문 안전 가이드가 동행해 초등학생부터 성인까지 숲속 타잔이 된 듯 신나게 체험할 수 있습니다.", addr: "경기 가평군 가평읍 경반안로 454", tel: "031-582-7996", img: IMG.forest },
-            { id: 309, cat: "tour", sub: "수목원·자연테마", badge: "★4.77 · 자라섬 18분", name: "호명호수", summary: "호명산 정상에서 산 능선과 어우러진 푸른 물빛을 감상하는 가평의 대표 친환경 명소.", tip: "호수 둘레길을 따라 자전거 대여나 산책을 즐기며 거북이 모형 수상 태양광 조형물도 찾아보세요.", addr: "경기 가평군 청평면 상지로64번길 77", tel: "031-580-2066", img: IMG.lake },
+            { id: 308, cat: "tour", sub: "레저·액티비티", badge: "★4.78 · 자라섬 14분", name: "짚라인가평(주)", summary: "칼봉산 자연휴양림 울창한 원시림 계곡 사이를 8개 코스로 연속 비행하는 숲속 어드벤처.", tip: "전문 안전 가이드가 동행해 초등학생부터 성인까지 숲속 타잔이 된 듯 신나게 체험할 수 있습니다.", addr: "경기 가평군 가평읍 경반안로 417-11", tel: "031-582-7996", img: IMG.forest },
+            { id: 309, cat: "tour", sub: "수목원·자연테마", badge: "★4.77 · 자라섬 18분", name: "호명호수", summary: "호명산 정상에서 산 능선과 어우러진 푸른 물빛을 감상하는 가평의 대표 친환경 명소.", tip: "호수 둘레길을 따라 자전거 대여나 산책을 즐기며 거북이 모형 수상 태양광 조형물도 찾아보세요.", addr: "경기 가평군 청평면 상지로 370", tel: "031-580-2066", img: IMG.lake },
             { id: 310, cat: "tour", sub: "유럽마을·박물관", badge: "★4.76 · 자라섬 17분", name: "쁘띠프랑스", summary: "청평호반이 내려다보이는 언덕 위 어린왕자 테마의 알록달록한 프랑스 문화마을.", tip: "오르골 시연과 마리오네트 인형극 공연 시간을 맞춰 관람하면 만족도가 두 배가 됩니다.", addr: "경기 가평군 청평면 호반로 1063", tel: "031-584-8200", img: IMG.euro },
             { id: 311, cat: "tour", sub: "유럽마을·박물관", badge: "★4.75 · 자라섬 25분", name: "에델바이스 스위스테마파크", summary: "스위스 알프스 전통 가옥 샤레와 양떼 목장, 치즈·베어 테마관이 모인 이국적 테마마을.", tip: "귀여운 곰 탈 사진 찍기와 양 먹이 주기 체험이 있어 어린이들에게 특히 인기가 많습니다.", addr: "경기 가평군 설악면 다락재로 226-57", tel: "031-581-9400", img: IMG.euro },
-            { id: 312, cat: "tour", sub: "레저·액티비티", badge: "★4.74 · 자라섬 16분", name: "가평사계절썰매장", summary: "여름에는 시원한 물썰매, 겨울과 간절기에는 짜릿한 슬로프 썰매를 즐기는 군영 레저시설.", tip: "무빙워크(자동 에스컬레이터)가 설치되어 있어 튜브를 직접 들고 올라갈 필요가 없어 편리합니다.", addr: "경기 가평군 상면 다원로 85", tel: "031-8078-8048", img: IMG.rail },
-            { id: 313, cat: "tour", sub: "수목원·자연테마", badge: "★4.70 · 자라섬 19분", name: "가평수목원 (청평자연휴양림)", summary: "청평호와 북한강이 조망되는 숲자락에서 계절 야생화와 산림욕을 즐기는 자연 수목 공간.", tip: "복잡하지 않고 고즈넉해 가족끼리 오붓하게 도토리와 단풍잎을 관찰하며 걷기 좋습니다.", addr: "경기 가평군 청평면 북한강로2246번길 72-36", tel: "031-584-0528", img: IMG.garden },
-            { id: 314, cat: "tour", sub: "레저·액티비티", badge: "★4.68 · 자라섬 19분", name: "별비치 워터파크", summary: "상면 청정 숲자락에 자리한 야외 슬라이드 및 가족형 워터 레저 휴양 시설.", tip: "시즌별 운영 일정을 사전 확인 후 방문하시면 주변 수목원 코스와 연계하기 좋습니다.", addr: "경기 가평군 상면 임초밤안골로 251", tel: "031-585-6000", img: IMG.lake },
+            { id: 312, cat: "tour", sub: "레저·액티비티", badge: "★4.74 · 자라섬 16분", name: "가평사계절썰매장", summary: "여름에는 시원한 물썰매, 겨울과 간절기에는 짜릿한 슬로프 썰매를 즐기는 군영 레저시설.", tip: "무빙워크(자동 에스컬레이터)가 설치되어 있어 튜브를 직접 들고 올라갈 필요가 없어 편리합니다.", addr: "경기 가평군 상면 깃대봉길 5-20", tel: "031-8078-8048", img: IMG.rail },
+            { id: 313, cat: "tour", sub: "수목원·자연테마", badge: "★4.70 · 자라섬 19분", name: "가평수목원 (청평자연휴양림)", summary: "청평호와 북한강이 조망되는 숲자락에서 계절 야생화와 산림욕을 즐기는 자연 수목 공간.", tip: "복잡하지 않고 고즈넉해 가족끼리 오붓하게 도토리와 단풍잎을 관찰하며 걷기 좋습니다.", addr: "경기 가평군 청평면 북한강로2246번길 8-6", tel: "031-584-0528", img: IMG.garden },
+            { id: 314, cat: "tour", sub: "레저·액티비티", badge: "★4.68 · 자라섬 15분", name: "별비치 워터파크", summary: "북면 목동리 청정 산자락에 자리한 야외 슬라이드 및 가족형 워터 레저 시설.", tip: "시즌별 운영 일정을 사전 확인 후 방문하시면 주변 북면 계곡 코스와 연계하기 좋습니다.", addr: "경기 가평군 북면 멱골로 336", tel: "031-581-4999", img: IMG.lake },
             { id: 315, cat: "tour", sub: "유럽마을·박물관", badge: "★4.73 · 자라섬 20분", name: "남송미술관", summary: "연인산 자락 수려한 자연 풍광 속에 한국 현대 회화와 조각 작품을 전시하는 예술 공간.", tip: "미술관 야외 조각 정원과 한옥·현대 건축의 조화를 감상하며 차분한 문화 산책을 즐겨보세요.", addr: "경기 가평군 북면 백둔로 322", tel: "031-581-0772", img: IMG.art },
-            { id: 316, cat: "tour", sub: "유럽마을·박물관", badge: "★4.72 · 자라섬 26분", name: "설미재미술관", summary: "유명산 가는 길, 건축미가 돋보이는 전시관과 드넓은 야외 잔디 조각공원을 품은 미술관.", tip: "전시 관람과 함께 다양한 조형 미술 체험 프로그램도 운영해 교육적 가치가 높습니다.", addr: "경기 가평군 설악면 유명로 1029-14", tel: "031-585-4292", img: IMG.art },
-            { id: 317, cat: "tour", sub: "유럽마을·박물관", badge: "★4.69 · 자라섬 18분", name: "일지안호범미술관", summary: "세계 각국의 풍물과 인물화를 화폭에 담은 일지 안호범 화백의 작품을 만나는 미술관.", tip: "상면 조종천 드라이브 길목에 위치해 여유롭게 회화 작품을 감상하기 좋습니다.", addr: "경기 가평군 상면 조종로 210", tel: "031-585-1695", img: IMG.art },
-            { id: 318, cat: "tour", sub: "유럽마을·박물관", badge: "★4.67 · 자라섬 23분", name: "현암농경유물박물관", summary: "선조들의 지혜가 담긴 전통 농기구와 생활 민속유물 수천 점을 전시한 역사 체험 박물관.", tip: "초등 사회 교과서에 나오는 옛 농경 도구를 실물로 생생하게 관찰할 수 있습니다.", addr: "경기 가평군 설악면 한서로 73", tel: "031-585-0445", img: IMG.art },
+            { id: 316, cat: "tour", sub: "유럽마을·박물관", badge: "★4.72 · 자라섬 26분", name: "설미재미술관", summary: "유명산 가는 길, 건축미가 돋보이는 전시관과 드넓은 야외 잔디 조각공원을 품은 미술관.", tip: "전시 관람과 함께 다양한 조형 미술 체험 프로그램도 운영해 교육적 가치가 높습니다.", addr: "경기 가평군 설악면 유명로 1454-38", tel: "031-585-4292", img: IMG.art },
+            { id: 317, cat: "tour", sub: "유럽마을·박물관", badge: "★4.69 · 자라섬 22분", name: "일지안호범미술관", summary: "세계 각국의 풍물과 인물화를 화폭에 담은 일지 안호범 화백의 작품을 만나는 사립 미술관.", tip: "조종면 운악청계로 드라이브 길목에 위치해 여유롭게 회화 작품을 감상하기 좋습니다.", addr: "경기 가평군 조종면 운악청계로 140", tel: "031-585-0180", img: IMG.art },
+            { id: 318, cat: "tour", sub: "유럽마을·박물관", badge: "★4.67 · 자라섬 14분", name: "현암농경유물박물관", summary: "선조들의 지혜가 담긴 전통 농기구와 생활 민속유물 수천 점을 전시한 역사 체험 박물관.", tip: "초등 사회 교과서에 나오는 옛 농경 도구를 실물로 생생하게 관찰할 수 있습니다.", addr: "경기 가평군 북면 석장모루길 13", tel: "031-582-7426", img: IMG.art },
 
             // ================= 5. 가평 계곡 (11곳 - 공식 목차 11곳 전수 포함) =================
-            { id: 401, cat: "valley", sub: "가평읍·북면", badge: "가평읍 대표 · 무장애데크", name: "용추계곡", summary: "연인산에서 발원해 와룡추·무송암 등 아홉 구비 비경을 빚어내는 자라섬 최단거리 명품 계곡.", tip: "평탄한 숲길 데크가 잘 깔려 있어 운동화 차림으로도 시원한 폭포 물소리를 감상할 수 있습니다.", addr: "경기 가평군 가평읍 용추로 429", tel: "031-580-2066", img: IMG.valley },
+            { id: 401, cat: "valley", sub: "가평읍·북면", badge: "가평읍 대표 · 무장애데크", name: "용추계곡", summary: "연인산에서 발원해 와룡추·무송암 등 아홉 구비 비경을 빚어내는 자라섬 최단거리 명품 계곡.", tip: "평탄한 숲길 데크가 잘 깔려 있어 운동화 차림으로도 시원한 폭포 물소리를 감상할 수 있습니다.", addr: "경기 가평군 가평읍 용추로 229-41", tel: "031-580-2066", img: IMG.valley },
             { id: 402, cat: "valley", sub: "가평읍·북면", badge: "칼봉산 오지 비경", name: "경반계곡", summary: "칼봉산과 매봉 사이 깊은 협곡을 따라 수락폭포와 맑은 소가 이어지는 숨은 청정 계곡.", tip: "칼봉산 자연휴양림 입구부터 이어지는 조용한 임도 산책로와 단풍 경관이 뛰어납니다.", addr: "경기 가평군 가평읍 경반안로 454", tel: "031-8078-8061", img: IMG.valley2 },
             { id: 403, cat: "valley", sub: "가평읍·북면", badge: "28km 장대한 물줄기", name: "명지계곡", summary: "명지산과 화악산에서 흘러내린 수량이 풍부하고 명지폭포의 장관을 품은 가평 대표 계곡.", tip: "명지산 군립공원 입구 주차장에서 명지폭포까지 완만한 계곡 숲길이 조성되어 있습니다.", addr: "경기 가평군 북면 가화로 2292", tel: "031-582-0108", img: IMG.valley },
             { id: 404, cat: "valley", sub: "가평읍·북면", badge: "연인산 맑은 계류", name: "백둔계곡", summary: "연인산 남쪽 골짜기를 따라 너럭바위와 맑고 차가운 계류가 흐르는 평화로운 계곡.", tip: "백둔리 사과 과수원과 연인산 다목적캠핑장이 인접해 가을 정취가 물씬 풍깁니다.", addr: "경기 가평군 북면 백둔로 441", tel: "031-580-2066", img: IMG.valley2 },
-            { id: 405, cat: "valley", sub: "가평읍·북면", badge: "경기 최고봉 청정수", name: "화악산계곡", summary: "경기도 최고봉 화악산(1,468m) 자락에서 발원해 한여름에도 손이 시릴 만큼 깨끗한 청정 계곡.", tip: "북면 화악산로를 따라 이어지는 깊은 산세와 가을 단풍 드라이브가 일품입니다.", addr: "경기 가평군 북면 화악산로 850", tel: "031-580-2066", img: IMG.valley },
-            { id: 406, cat: "valley", sub: "가평읍·북면", badge: "복호동폭포 절경", name: "조무락계곡", summary: "산새들이 춤추고 노래한다는 이름처럼 석룡산 기암과 복호동폭포가 어우러진 비경 계곡.", tip: "계곡을 따라 이어지는 트레킹 코스는 사진작가들도 즐겨 찾는 가을 비경지입니다.", addr: "경기 가평군 북면 화악산로 1054", tel: "031-580-2066", img: IMG.valley2 },
+            { id: 405, cat: "valley", sub: "가평읍·북면", badge: "경기 최고봉 청정수", name: "화악산계곡", summary: "경기도 최고봉 화악산(1,468m) 자락에서 발원해 한여름에도 손이 시릴 만큼 깨끗한 청정 계곡.", tip: "북면 화악산로를 따라 이어지는 깊은 산세와 가을 단풍 드라이브가 일품입니다.", addr: "경기 가평군 북면 화악산로 686-57", tel: "031-580-2066", img: IMG.valley },
+            { id: 406, cat: "valley", sub: "가평읍·북면", badge: "복호동폭포 절경", name: "조무락계곡", summary: "산새들이 춤추고 노래한다는 이름처럼 석룡산 기암과 복호동폭포가 어우러진 비경 계곡.", tip: "계곡을 따라 이어지는 트레킹 코스는 사진작가들도 즐겨 찾는 가을 비경지입니다.", addr: "경기 가평군 북면 가화로 3053", tel: "031-580-2066", img: IMG.valley2 },
             { id: 407, cat: "valley", sub: "설악·청평·조종", badge: "박쥐소·마당소 비경", name: "유명계곡 (입구지계곡)", summary: "유명산 기암괴석 사이를 흐르며 에메랄드빛 깊은 소와 출렁다리를 만드는 그림 같은 계곡.", tip: "유명산 자연휴양림 데크 탐방로를 따라 걸으며 기암과 단풍이 비치는 물빛을 감상해 보세요.", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.valley },
-            { id: 408, cat: "valley", sub: "설악·청평·조종", badge: "설악면 드라이브 명소", name: "어비계곡", summary: "어비산 자락 맑은 물속에 물고기가 뛰어오를 만큼 깨끗하고 아늑한 설악면 대표 계곡.", tip: "주변 잣나무 산책길과 감성 베이커리 카페, 맛집들이 모여 있어 드라이브 코스로 좋습니다.", addr: "경기 가평군 설악면 어비산길 130", tel: "031-580-2066", img: IMG.valley2 },
+            { id: 408, cat: "valley", sub: "설악·청평·조종", badge: "설악면 드라이브 명소", name: "어비계곡", summary: "어비산 자락 맑은 물속에 물고기가 뛰어오를 만큼 깨끗하고 아늑한 설악면 대표 계곡.", tip: "주변 잣나무 산책길과 감성 베이커리 카페, 맛집들이 모여 있어 드라이브 코스로 좋습니다.", addr: "경기 가평군 설악면 어비산길 76", tel: "031-580-2066", img: IMG.valley2 },
             { id: 409, cat: "valley", sub: "설악·청평·조종", badge: "초록 숲그림자 물빛", name: "녹수계곡", summary: "깃대봉과 주발봉의 푸른 숲 그림자가 물에 비쳐 초록빛으로 빛나는 조종면의 고요한 계곡.", tip: "북적임 없이 조용한 시골 강변과 계곡 풍경을 따라 힐링 드라이브를 즐기기 좋습니다.", addr: "경기 가평군 조종면 상판리 320", tel: "031-580-2066", img: IMG.valley },
-            { id: 410, cat: "valley", sub: "설악·청평·조종", badge: "무우폭포·백년폭포", name: "현등사계곡 (운악산계곡)", summary: "운악산 천년고찰 현등사로 오르는 길목에 무우폭포와 백년폭포가 시원하게 쏟아지는 계곡.", tip: "포장된 사찰 산책로를 따라 오르면 등산 장비 없이도 폭포와 고찰을 함께 둘러볼 수 있습니다.", addr: "경기 가평군 조종면 운악청계로 501", tel: "031-585-0707", img: IMG.valley2 },
+            { id: 410, cat: "valley", sub: "설악·청평·조종", badge: "무우폭포·백년폭포", name: "현등사계곡 (운악산계곡)", summary: "운악산 천년고찰 현등사로 오르는 길목에 무우폭포와 백년폭포가 시원하게 쏟아지는 계곡.", tip: "포장된 사찰 산책로를 따라 오르면 등산 장비 없이도 폭포와 고찰을 함께 둘러볼 수 있습니다.", addr: "경기 가평군 조종면 운악청계로589번길 73", tel: "031-585-0707", img: IMG.valley2 },
             { id: 411, cat: "valley", sub: "설악·청평·조종", badge: "수림 우거진 청정골", name: "화야산큰골계곡", summary: "화야산 깊은 산림 사이로 맑은 계류가 사계절 마르지 않고 흐르는 청평·설악 경계 비경.", tip: "봄 야생화와 가을 활엽수 단풍이 곱게 물들어 가벼운 삼림욕 산책지로 추천합니다.", addr: "경기 가평군 청평면 삼회리 260", tel: "031-580-2066", img: IMG.valley },
 
             // ================= 6. 명산·자연휴양림·캠핑장 (13곳 - 공식 목차 13곳 전수 포함) =================
             { id: 501, cat: "nature", sub: "가평 5대 명산", badge: "해발 862m · 억새&계곡", name: "유명산", summary: "능선 억새밭과 아름다운 입구지계곡을 동시에 품어 산행과 휴양을 함께 즐기는 명산.", tip: "산 정상까지 오르지 않아도 휴양림 숲속 산책로만 걸어도 가을 정취를 만끽할 수 있습니다.", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.mountain },
             { id: 502, cat: "nature", sub: "가평 5대 명산", badge: "해발 1,267m · 단풍명산", name: "명지산", summary: "경기도에서 두 번째로 높은 웅장한 산세와 100대 명산 단풍 절경을 자랑하는 가평의 진산.", tip: "익근리 입구에서 승천사~명지폭포 구간은 완만하여 가족 트레킹 코스로 인기가 높습니다.", addr: "경기 가평군 북면 가화로 2292", tel: "031-582-0108", img: IMG.autumn },
             { id: 503, cat: "nature", sub: "가평 5대 명산", badge: "해발 935m · 경기소금강", name: "운악산", summary: "기암절벽과 바위 봉우리가 금강산을 닮아 경기 소금강이라 불리는 수려한 바위 명산.", tip: "210m 길이의 운악산 출렁다리 전망대에서 바라보는 가을 산악 파노라마가 압권입니다.", addr: "경기 가평군 조종면 운악청계로 501", tel: "031-580-2066", img: IMG.mountain },
-            { id: 504, cat: "nature", sub: "가평 5대 명산", badge: "해발 1,468m · 경기최고봉", name: "화악산", summary: "경기도에서 가장 높은 지붕으로 원시림과 아고산대 식생을 간직한 웅장한 명산.", tip: "화악터널 쌈지공원 전망대까지 차량으로 올라가면 발아래 펼쳐진 구름바다와 산그리메를 볼 수 있습니다.", addr: "경기 가평군 북면 화악산로 1250", tel: "031-580-2066", img: IMG.mountain },
+            { id: 504, cat: "nature", sub: "가평 5대 명산", badge: "해발 1,468m · 경기최고봉", name: "화악산", summary: "경기도에서 가장 높은 지붕으로 원시림과 아고산대 식생을 간직한 웅장한 명산.", tip: "화악터널 쌈지공원 전망대까지 차량으로 올라가면 발아래 펼쳐진 산그리메를 볼 수 있습니다.", addr: "경기 가평군 북면 화악리 산228-1", tel: "031-580-2066", img: IMG.mountain },
             { id: 505, cat: "nature", sub: "가평 5대 명산", badge: "해발 886m · 잣나무군락", name: "축령산", summary: "국내 최대 규모의 울창한 잣나무 숲과 봄 철쭉, 가을 단풍이 조화로운 치유의 산.", tip: "잣향기푸른숲과 아침고요수목원이 산자락에 함께 자리해 연계 관광이 매우 편리합니다.", addr: "경기 가평군 상면 축령로 289-146", tel: "031-8008-6769", img: IMG.forest },
-            { id: 506, cat: "nature", sub: "도립·군립공원", badge: "경기도립공원 · 생태탐방", name: "연인산 도립공원", summary: "사랑이 이루어지는 곳이라는 아름다운 이름과 용추구곡·아재비고개 숲길을 품은 도립공원.", tip: "연인산 탐방안내소에서 출발하는 무장애 나눔길은 유모차와 아이도 편하게 걸을 수 있습니다.", addr: "경기 가평군 가평읍 용추로 227", tel: "031-8008-8140", img: IMG.forest },
+            { id: 506, cat: "nature", sub: "도립·군립공원", badge: "경기도립공원 · 생태탐방", name: "연인산 도립공원", summary: "사랑이 이루어지는 곳이라는 아름다운 이름과 용추구곡·아재비고개 숲길을 품은 도립공원.", tip: "연인산 탐방안내소에서 출발하는 무장애 나눔길은 유모차와 아이도 편하게 걸을 수 있습니다.", addr: "경기 가평군 가평읍 용추로 229-41", tel: "031-8008-8140", img: IMG.forest },
             { id: 507, cat: "nature", sub: "도립·군립공원", badge: "가평군립공원 · 생태보고", name: "명지산 군립공원", summary: "천연기념물과 희귀 야생화가 서식하는 청정 산림 생태계 보전 군립공원.", tip: "입구 생태전시관에서 명지산의 사계절 동식물 이야기를 먼저 살펴보고 산책을 시작해 보세요.", addr: "경기 가평군 북면 가화로 2292", tel: "031-582-0108", img: IMG.autumn },
-            { id: 508, cat: "nature", sub: "휴양림·공영캠핑", badge: "경기도 직영 · 피톤치드", name: "강씨봉자연휴양림", summary: "북면 도마치계곡 인근 울창한 천연림과 맑은 계곡이 어우러진 고즈넉한 도립 자연휴양림.", tip: "차량 통행이 적고 임도 산책로가 완만해 숲속 힐링 산책을 즐기기에 최고입니다.", addr: "경기 가평군 북면 적목리 산1-28", tel: "031-8008-6611", img: IMG.forest },
+            { id: 508, cat: "nature", sub: "휴양림·공영캠핑", badge: "경기도 직영 · 피톤치드", name: "강씨봉자연휴양림", summary: "북면 도마치계곡 인근 울창한 천연림과 맑은 계곡이 어우러진 고즈넉한 도립 자연휴양림.", tip: "차량 통행이 적고 임도 산책로가 완만해 숲속 힐링 산책을 즐기기에 최고입니다.", addr: "경기 가평군 북면 논남기길 520", tel: "031-8008-6611", img: IMG.forest },
             { id: 509, cat: "nature", sub: "휴양림·공영캠핑", badge: "국립 1호 휴양림 · 식물원", name: "유명산자연휴양림", summary: "1989년 개장한 국내 최초 자연휴양림으로 숲속의집, 야영장, 자생식물원을 두루 갖춘 명소.", tip: "넓은 숲속 데크로드와 우리 꽃 자생식물원이 무료 개방 수준으로 잘 가꾸어져 있습니다.", addr: "경기 가평군 설악면 유명산길 79-53", tel: "031-589-5487", img: IMG.forest },
             { id: 510, cat: "nature", sub: "휴양림·공영캠핑", badge: "가평읍 근교 · 산림치유", name: "칼봉산자연휴양림", summary: "자라섬에서 차량 15분 거리의 경반계곡과 잣나무 숲속에 자리한 가평군 공영 자연휴양림.", tip: "산림생태문화체험단지와 짚라인가평이 함께 있어 숙박과 체험을 동시에 즐길 수 있습니다.", addr: "경기 가평군 가평읍 경반안로 454", tel: "031-8078-8061", img: IMG.forest },
-            { id: 511, cat: "nature", sub: "휴양림·공영캠핑", badge: "공영 명품 캠핑·캐빈", name: "연인산다목적캠핑장", summary: "오토캠핑장, 캐빈하우스, 클럽하우스 등 깔끔한 공공 숙영 시설을 완비한 숲속 캠핑 단지.", tip: "백둔계곡 맑은 물과 연인산 숲길이 맞닿아 있어 사계절 쾌적한 휴식을 제공합니다.", addr: "경기 가평군 북면 백둔로 441", tel: "031-8078-8068", img: IMG.camp },
-            { id: 512, cat: "nature", sub: "휴양림·공영캠핑", badge: "대한민국 대표 캠핑섬", name: "자라섬캠핑장", summary: "2008 세계캠핑카라바닝대회 개최지이자 캠핑스쿨이 열리는 국내 최대 규모의 수변 캠핑장.", tip: "서도 캠핑장 산책과 함께 중도 잔디광장, 남도 꽃정원까지 연결 다리로 도보 투어가 가능합니다.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8029", img: IMG.camp2 },
-            { id: 513, cat: "nature", sub: "휴양림·공영캠핑", badge: "조종천 송림 국민관광지", name: "산장관광지", summary: "푸른 조종천 강변과 소나무 숲이 어우러진 가족 피크닉·글램핑·야영 복합 국민관광지.", tip: "강변 산책 데크와 어린이 놀이터, 넓은 잔디밭이 있어 당일치기 나들이로도 좋습니다.", addr: "경기 가평군 상면 덕현리 402-1", tel: "031-8078-8065", img: IMG.lake2 },
+            { id: 511, cat: "nature", sub: "휴양림·공영캠핑", badge: "공영 명품 캠핑·캐빈", name: "연인산다목적캠핑장", summary: "오토캠핑장, 캐빈하우스, 클럽하우스 등 깔끔한 공공 숙영 시설을 완비한 숲속 캠핑 단지.", tip: "백둔계곡 맑은 물과 연인산 숲길이 맞닿아 있어 사계절 쾌적한 휴식을 제공합니다.", addr: "경기 가평군 북면 백둔로 441", tel: "031-8078-8068", img: "https://i.postimg.cc/fWpgN9bB/yeon-insandamogjeogkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=9" },
+            { id: 512, cat: "nature", sub: "휴양림·공영캠핑", badge: "대한민국 대표 캠핑섬", name: "자라섬캠핑장", summary: "2008 세계캠핑카라바닝대회 개최지이자 캠핑스쿨이 열리는 국내 최대 규모의 수변 캠핑장.", tip: "서도 캠핑장 산책과 함께 중도 잔디광장, 남도 꽃정원까지 연결 다리로 도보 투어가 가능합니다.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-8078-8029", img: "https://i.postimg.cc/sfq0rh2T/jalaseomkaempingjang.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=1" },
+            { id: 513, cat: "nature", sub: "휴양림·공영캠핑", badge: "조종천 송림 국민관광지", name: "산장관광지", summary: "푸른 조종천 강변과 소나무 숲이 어우러진 가족 피크닉·글램핑·야영 복합 국민관광지.", tip: "강변 산책 데크와 어린이 놀이터, 넓은 잔디밭이 있어 당일치기 나들이로도 좋습니다.", addr: "경기 가평군 상면 덕현산장길 71", tel: "031-8078-8052", img: "https://i.postimg.cc/nVgwJDLT/sanjang-gwangwangji.jpg", tqUrl: "https://m.thankqcamping.com/resv/view.hbb?cseq=789" },
 
-            // ================= 7. 체험·축제·정보 (9곳 - 공식 목차 9개 항목 전수 포함 + 평점 및 자라섬 근접순 정렬) =================
+            // ================= 7. 체험·축제·정보 (9곳 - 공식 목차 9개 항목 전수 포함 & 정확한 주소 검증) =================
             { id: 601, cat: "exp", sub: "축제·특산·교통", badge: "★4.88 · 자라섬 도보권", name: "가평축제 (자라섬 꽃 페스타 & 재즈페스티벌)", summary: "봄·가을 자라섬 남도를 수놓는 꽃 페스타와 세계적인 선율의 자라섬 국제 재즈페스티벌.", tip: "캠핑스쿨이 열리는 자라섬 일대에서 펼쳐지는 사계절 문화 축제 현장을 산책하며 느껴보세요.", addr: "경기 가평군 가평읍 자라섬로 60", tel: "031-580-2066", img: IMG.island },
             { id: 602, cat: "exp", sub: "축제·특산·교통", badge: "★4.82 · 자라섬 4분", name: "가평 특산품 (가평잣고을시장)", summary: "가평 5일장(5·10일)과 창업경제타운이 어우러진 전통시장으로 햇잣·잣기름·잣빵 특산품 구매 명소.", tip: "믿을 수 있는 100% 가평 햇잣과 잣엿, 지역 농산물을 시중보다 합리적인 가격에 만나보세요.", addr: "경기 가평군 가평읍 장터2길 12", tel: "031-582-8181", img: IMG.market },
-            { id: 603, cat: "exp", sub: "축제·특산·교통", badge: "자라섬·가평역 출발", name: "가평 순환버스 (가평시티투어)", summary: "자라섬·남이섬·쁘띠프랑스·아침고요수목원 등 주요 명소를 하나로 잇는 편리한 투어버스.", tip: "당일 승차권 1장으로 지정 정류장에서 자유롭게 승하차하며 뚜벅이 여행도 알차게 즐길 수 있습니다.", addr: "경기 가평군 가평읍 문화로 210", tel: "031-580-2066", img: IMG.rail },
-            { id: 604, cat: "exp", sub: "축제·특산·교통", badge: "가평역·자라섬 안내소", name: "가평정보 (가평군 종합관광안내소)", summary: "가평 여행 지도, 시즌별 할인 쿠폰북, 축제 일정 및 맞춤 코스를 친절히 안내해 주는 공식 창구.", tip: "가평역 광장과 자라섬 입구 관광안내소에서 종이 스탬프북과 최신 리플릿도 무료로 받을 수 있습니다.", addr: "경기 가평군 가평읍 문화로 210", tel: "031-580-2066", img: IMG.euro },
-            { id: 605, cat: "exp", sub: "문화재·체육", badge: "자라섬 4분 · 역사산책", name: "가평 문화재 (가평향교 & 한석봉 유적)", summary: "조선시대 지방 교육기관인 가평향교와 명필 한석봉 선생이 군수로 재임했던 역사가 살아있는 공간.", tip: "고즈넉한 대성전과 명륜당 한옥 마당을 걸으며 가평의 유서 깊은 역사 이야기를 들려주세요.", addr: "경기 가평군 가평읍 향교로 25", tel: "031-582-2942", img: IMG.temple },
-            { id: 606, cat: "exp", sub: "문화재·체육", badge: "자라섬 5분 · 레포츠타운", name: "가평 체육대회 (가평종합운동장·한석봉체육관)", summary: "전국 규모 체육대회와 마라톤, 자전거 대회가 연중 개최되는 가평군의 스포츠 메카.", tip: "운동장 주변 산책로와 인접한 뮤직빌리지 음악역1939 광장도 함께 둘러보기 좋습니다.", addr: "경기 가평군 가평읍 문화로 131", tel: "031-8078-8070", img: IMG.island },
+            { id: 603, cat: "exp", sub: "축제·특산·교통", badge: "자라섬·가평역 출발", name: "가평 순환버스 (가평시티투어)", summary: "자라섬·남이섬·쁘띠프랑스·아침고요수목원 등 주요 명소를 하나로 잇는 편리한 투어버스.", tip: "가평역 광장 정류장과 자라섬 정류장에서 승하차하며 주요 명소를 편하게 둘러볼 수 있습니다.", addr: "경기 가평군 가평읍 문화로 13-42", tel: "031-582-8830", img: IMG.rail },
+            { id: 604, cat: "exp", sub: "축제·특산·교통", badge: "가평역·자라섬 안내소", name: "가평정보 (가평역 관광안내소)", summary: "가평 여행 지도, 시즌별 할인 정보, 축제 일정 및 맞춤 코스를 친절히 안내해 주는 공식 창구.", tip: "ITX 가평역 광장 관광안내소와 자라섬 안내소에서 최신 종이 지도와 관광 안내서를 무료로 받을 수 있습니다.", addr: "경기 가평군 가평읍 문화로 13-42", tel: "031-582-8830", img: IMG.euro },
+            { id: 605, cat: "exp", sub: "문화재·체육", badge: "자라섬 4분 · 역사산책", name: "가평 문화재 (가평향교)", summary: "1398년(태조 7년) 창건된 전통 유교 교육기관으로 대성전과 명륜당 원형이 잘 보존된 문화유산.", tip: "고즈넉한 한옥 마당을 걸으며 조선시대 가평의 유서 깊은 역사 이야기를 들려주세요.", addr: "경기 가평군 가평읍 향교로 23-1", tel: "031-580-2066", img: IMG.temple },
+            { id: 606, cat: "exp", sub: "문화재·체육", badge: "자라섬 5분 · 레포츠타운", name: "가평 체육대회 (가평종합운동장)", summary: "전국 규모 체육대회와 마라톤, 자전거 대회가 연중 개최되는 가평군의 스포츠 메카.", tip: "운동장 주변 산책로와 인접한 뮤직빌리지 음악역1939 광장도 함께 둘러보기 좋습니다.", addr: "경기 가평군 가평읍 문화로 131", tel: "031-8078-8073", img: IMG.island },
             { id: 607, cat: "exp", sub: "체험·천문·템플", badge: "★4.89 · 별자리관측 1위", name: "주말농장·천문대 (자연과별 가평천문대)", summary: "청정 북면 밤하늘에서 대형 천체망원경으로 달 크레이터와 토성 고리, 별자리를 관측하는 체험 천문대.", tip: "전문 해설사의 재미있는 우주 강의가 진행되어 초등학생 과학 체험 코스로 만족도가 최고입니다.", addr: "경기 가평군 북면 백둔로342번길 115-33", tel: "031-581-4001", img: IMG.star },
             { id: 608, cat: "exp", sub: "체험·천문·템플", badge: "★4.84 · 천년고찰 힐링", name: "템플스테이 (운악산 현등사)", summary: "신라 법흥왕 때 창건된 운악산 천년고찰에서 다도와 산사 명상, 타종 체험을 하는 힐링 프로그램.", tip: "당일형 및 1박 2일 휴식형 프로그램뿐 아니라 가을 단풍 산사 산책만으로도 마음이 평온해집니다.", addr: "경기 가평군 조종면 운악청계로589번길 73", tel: "031-585-0707", img: IMG.temple },
-            { id: 609, cat: "exp", sub: "체험·천문·템플", badge: "★4.81 · 잣·손두부 체험", name: "농촌체험휴양마을 (초롱이둥지마을)", summary: "잣 까기 체험, 맷돌 손두부 만들기, 계절 농산물 수확 등 오감만족 시골 체험이 가득한 휴양마을.", tip: "가족·단체 예약 시 직접 만든 따뜻한 손두부와 시골 밥상을 맛볼 수 있어 아이들이 무척 좋아합니다.", addr: "경기 가평군 설악면 묵안로 908", tel: "031-584-9959", img: IMG.garden }
+            { id: 609, cat: "exp", sub: "체험·천문·템플", badge: "★4.81 · 잣·손두부 체험", name: "농촌체험휴양마을 (초롱이둥지마을)", summary: "잣 까기 체험, 맷돌 손두부 만들기, 계절 농산물 수확 등 오감만족 시골 체험이 가득한 휴양마을.", tip: "가족·단체 예약 시 직접 만든 따뜻한 손두부와 시골 밥상을 맛볼 수 있어 아이들이 무척 좋아합니다.", addr: "경기 가평군 설악면 묵안로 906", tel: "031-584-9959", img: IMG.garden }
         ];
+
+        // 간편목록 전용 자라섬 기준 소요시간 매핑 (배지에 분 표기가 없는 항목까지 101곳 전수 매칭)
+        const JARA_TIME_MAP = {
+            1: "자라섬 18분", 2: "자라섬 18분", 3: "자라섬 10분", 4: "자라섬 28분",
+            5: "자라섬 38분", 6: "자라섬 28분", 7: "자라섬 24분", 8: "자라섬 32분",
+            123: "자라섬 25분", 124: "자라섬 18분",
+            201: "자라섬 32분", 202: "자라섬 1분", 203: "자라섬 22분", 204: "자라섬 17분",
+            205: "자라섬 20분", 206: "자라섬 20분", 207: "자라섬 16분", 208: "자라섬 25분",
+            209: "자라섬 26분", 210: "자라섬 20분", 211: "자라섬 30분", 212: "자라섬 25분",
+            213: "자라섬 22분", 214: "자라섬 25분", 215: "자라섬 20분", 216: "자라섬 24분",
+            217: "자라섬 10분", 218: "자라섬 25분",
+            401: "자라섬 10분", 402: "자라섬 15분", 403: "자라섬 28분", 404: "자라섬 22분",
+            405: "자라섬 26분", 406: "자라섬 34분", 407: "자라섬 32분", 408: "자라섬 33분",
+            409: "자라섬 27분", 410: "자라섬 30분", 411: "자라섬 25분",
+            501: "자라섬 32분", 502: "자라섬 28분", 503: "자라섬 28분", 504: "자라섬 38분",
+            505: "자라섬 24분", 506: "자라섬 10분", 507: "자라섬 28분", 508: "자라섬 35분",
+            509: "자라섬 32분", 510: "자라섬 15분", 511: "자라섬 22분", 512: "자라섬 1분",
+            513: "자라섬 17분",
+            601: "자라섬 1분", 603: "자라섬 3분", 604: "자라섬 3분",
+            607: "자라섬 24분", 608: "자라섬 30분", 609: "자라섬 32분"
+        };
+
+        function getJaraTime(place) {
+            if (JARA_TIME_MAP[place.id]) return JARA_TIME_MAP[place.id];
+            const match = place.badge && place.badge.match(/자라섬\s*\d+분/);
+            if (match) return match[0];
+            return "자라섬 인근";
+        }
 
         // 카테고리 메타데이터
         const CATEGORY_META = {
@@ -708,6 +762,32 @@
 
         let currentCat = 'home';
         let currentSub = '전체';
+        let viewMode = 'card'; // 'card' (사진카드) | 'list' (간편목록)
+
+        // 보기 방식 전환 (사진카드 <-> 간편목록)
+        function setViewMode(mode) {
+            viewMode = mode;
+            const btnCard = document.getElementById('btnViewCard');
+            const btnList = document.getElementById('btnViewList');
+            const photoNotice = document.getElementById('photoNoticeBox');
+            const cardsContainer = document.getElementById('cardsContainer');
+
+            if (mode === 'list') {
+                btnList.className = "px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white";
+                btnCard.className = "px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]";
+                if (photoNotice) photoNotice.classList.add('hidden');
+                cardsContainer.classList.remove('space-y-3');
+                cardsContainer.classList.add('space-y-2');
+            } else {
+                btnCard.className = "px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white";
+                btnList.className = "px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]";
+                if (photoNotice) photoNotice.classList.remove('hidden');
+                cardsContainer.classList.remove('space-y-2');
+                cardsContainer.classList.add('space-y-3');
+            }
+
+            renderCards();
+        }
 
         // 캠핑장 카테고리 순서 랜덤 셔플 (Fisher-Yates 알고리즘)
         function shuffleCampsites() {
@@ -741,7 +821,7 @@
                 .trim();
         }
 
-        // 각 항목별 외부 링크 생성 (네이버지도·카카오맵 모두 해당 항목의 '주소'로 정확히 검색 연동)
+        // 각 항목별 외부 링크 생성 (모바일·PC 모두 완벽 호환되는 네이버지도·카카오맵 주소 검색 URL 및 땡큐캠핑 고유 예약 URL 연동)
         function getLinks(place) {
             const pureAddr = cleanSearchAddress(place.addr);
             const encodedAddr = encodeURIComponent(pureAddr);
@@ -749,7 +829,7 @@
             return {
                 tqLink: place.tqUrl || null,
                 naverInfo: `https://search.naver.com/search.naver?query=${qName}`,
-                naverMap: `https://map.naver.com/p/search/${encodedAddr}`,
+                naverMap: `https://m.map.naver.com/search2/search.naver?query=${encodedAddr}`,
                 kakaoMap: `https://map.kakao.com/link/search/${encodedAddr}`
             };
         }
@@ -805,6 +885,7 @@
             const topHeader = document.getElementById('topHeader');
             const topNavBar = document.getElementById('topNavBar');
             const bottomNavBar = document.getElementById('bottomNavBar');
+            const catBgLayer = document.getElementById('catBgLayer');
 
             if (cat === 'home') {
                 // 메인 화면은 요청하신 포스터형 일러스트 화면만 깔끔하게 노출
@@ -814,6 +895,7 @@
                 topNavBar.classList.add('hidden');
                 bottomNavBar.classList.add('hidden');
                 bottomNavBar.classList.remove('flex');
+                catBgLayer.classList.add('hidden');
             } else {
                 posterHome.classList.add('hidden');
                 listView.classList.remove('hidden');
@@ -821,6 +903,7 @@
                 topNavBar.classList.remove('hidden');
                 bottomNavBar.classList.remove('hidden');
                 bottomNavBar.classList.add('flex');
+                catBgLayer.classList.remove('hidden');
 
                 // 캠핑장 탭 진입 시 매번 랜덤 순서로 섞기
                 if (cat === 'camp' || cat === 'all') {
@@ -841,13 +924,13 @@
             document.getElementById('catTitleText').textContent = meta.title;
             document.getElementById('catDescText').textContent = meta.desc;
 
-            if (!meta.subs || meta.subs.length <= 1) {
+            if (!meta.subs || meta.subs.length === 0) {
                 container.innerHTML = '';
                 return;
             }
 
             container.innerHTML = meta.subs.map(sub => `
-                <button onclick="selectSubFilter('${sub}')" class="sub-chip ${currentSub === sub ? 'active' : 'bg-white text-gray-600 border-gray-200'} border px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition shadow-xs">
+                <button onclick="selectSubFilter('${sub}')" class="sub-chip ${currentSub === sub ? 'active' : 'bg-white text-gray-600 border-gray-200'} border px-2.5 py-1.5 rounded-full text-[11.5px] whitespace-nowrap transition shadow-xs">
                     ${sub}
                 </button>
             `).join('');
@@ -862,7 +945,7 @@
             renderCards();
         }
 
-        // 장소 카드 렌더링
+        // 장소 카드 & 간편목록 렌더링
         function renderCards() {
             const container = document.getElementById('cardsContainer');
             const filtered = PLACES.filter(item => {
@@ -873,11 +956,43 @@
 
             document.getElementById('resultCountBadge').textContent = `총 ${filtered.length}곳`;
 
+            // [간편목록 모드] 사진 없이 가로 한 줄 형태 (순번 · 명칭 · 자라섬 소요시간 · 네이버지도 · 카카오맵 · 네이버검색)
+            if (viewMode === 'list') {
+                container.innerHTML = filtered.map((place, idx) => {
+                    const links = getLinks(place);
+                    const jaraTime = getJaraTime(place);
+                    return `
+                    <article onclick="openDetailModal(${place.id})" class="card-anim bg-white/95 backdrop-blur-xs rounded-xl border border-gray-200/90 shadow-xs px-2.5 py-2.5 flex items-center justify-between gap-2 cursor-pointer hover:border-[#f06a1a] transition">
+                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                            <span class="min-w-[22px] h-5 px-1 rounded-md bg-[#f06a1a] text-white text-[11px] font-extrabold flex items-center justify-center flex-shrink-0">${idx + 1}</span>
+                            <div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                <h4 class="font-bold text-gray-900 text-[13px] leading-snug">${place.name}</h4>
+                                <span class="text-[10.5px] font-bold text-[#d4550a] bg-[#fff4ed] border border-orange-200/80 px-1.5 py-0.5 rounded whitespace-nowrap leading-none">${jaraTime}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                            <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#03C75A] text-white text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
+                                네이버지도
+                            </a>
+                            <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#FEE500] text-[#191919] text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
+                                카카오맵
+                            </a>
+                            <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-gray-800 text-white text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
+                                네이버검색
+                            </a>
+                        </div>
+                    </article>
+                    `;
+                }).join('');
+                return;
+            }
+
+            // [사진카드 모드] 기존 상세 리플릿 카드 유지
             container.innerHTML = filtered.map(place => {
                 const links = getLinks(place);
                 const fallback = getFallbackImg(place.name);
                 return `
-                <article onclick="openDetailModal(${place.id})" class="card-anim bg-white rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden cursor-pointer hover:border-[#f06a1a] transition">
+                <article onclick="openDetailModal(${place.id})" class="card-anim bg-white/95 backdrop-blur-xs rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden cursor-pointer hover:border-[#f06a1a] transition">
                     <!-- 상단 이미지 + 배지 -->
                     <div class="relative h-44 bg-gray-100">
                         <img src="${place.img}" alt="${place.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}';" class="w-full h-full object-cover">
