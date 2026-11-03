@@ -155,6 +155,72 @@
             margin: 10px 12px !important;
             font-family: 'Pretendard', sans-serif !important;
         }
+
+        /* 내 위치 텐트 마커 & 주변 장소 말풍선 알약 마커 스타일 */
+        @keyframes tentPulse {
+            0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.85; }
+            100% { transform: translate(-50%, -50%) scale(1.75); opacity: 0; }
+        }
+        .tent-pulse-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 44px;
+            height: 44px;
+            border-radius: 9999px;
+            background: rgba(240, 106, 26, 0.38);
+            animation: tentPulse 1.8s ease-out infinite;
+            pointer-events: none;
+        }
+        .map-speech-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 3px 8px 3px 4px;
+            border-radius: 9999px;
+            box-shadow: 0 3px 10px rgba(15, 35, 50, 0.22);
+            white-space: nowrap;
+            font-family: 'Pretendard', sans-serif;
+            position: relative;
+            transform: translate(-50%, -100%);
+            margin-top: -6px;
+            transition: transform 0.15s ease;
+        }
+        .map-speech-pill:hover {
+            transform: translate(-50%, -105%) scale(1.05);
+        }
+        .map-speech-pill::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px 5px 0 5px;
+            border-style: solid;
+            border-color: var(--pill-color, #f06a1a) transparent transparent transparent;
+        }
+
+        /* Tailwind CSS가 지도 타일·마커 크기를 깨뜨리지 않도록 보호 */
+        .leaflet-container {
+            font-family: 'Pretendard', sans-serif !important;
+            background: #dcebf5 !important;
+        }
+        .leaflet-container img,
+        .leaflet-container svg {
+            max-width: none !important;
+            max-height: none !important;
+        }
+        .leaflet-container img.leaflet-tile {
+            width: 256px !important;
+            height: 256px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .leaflet-div-icon {
+            background: transparent !important;
+            border: none !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex justify-center items-start sm:py-4">
@@ -493,14 +559,21 @@
                                 <span>내 현재 위치 기준</span>
                             </button>
                             <button onclick="useJarasumCenter()" id="btnLocJara" class="py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-white text-[#1f3d4d] border-slate-200 hover:border-[#f06a1a]">
-                                <i class="fa-solid fa-campground text-[#f06a1a]"></i>
+                                <i class="fa-solid fa-campground"></i>
                                 <span>자라섬 캠핑장 기준</span>
                             </button>
                         </div>
 
                         <!-- 인터랙티브 위치기반 지도 (본 리플릿 등록 장소 전용 마커 표시) -->
-                        <div id="nearbyMapWrapper" class="relative rounded-2xl overflow-hidden border-2 border-white shadow-inner h-56 bg-sky-100">
+                        <div id="nearbyMapWrapper" class="relative rounded-2xl overflow-hidden border-2 border-white shadow-inner h-64 bg-[#dcebf5]">
                             <div id="nearbyMap" class="w-full h-full"></div>
+                            <button type="button" onclick="recenterNearbyMap()" class="absolute bottom-2.5 right-2.5 z-[500] bg-white/95 hover:bg-white text-[#122b3a] border border-slate-200 rounded-full px-2.5 py-1.5 text-[11px] font-extrabold shadow-md flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-[#f06a1a]"></span>
+                                <span>내 위치로</span>
+                            </button>
+                            <div class="absolute top-2.5 right-2.5 z-[500] bg-black/55 backdrop-blur-xs text-white text-[10px] font-semibold px-2.5 py-1 rounded-full pointer-events-none">
+                                확대(+)하면 말풍선이 더 열립니다
+                            </div>
                         </div>
 
                         <!-- 현재 선택된 기준점 네이버지도 · 카카오맵 바로 열기 연동 -->
@@ -1459,24 +1532,149 @@
             updateMapMarkers();
         }
 
-        function ensureLeafletMap() {
+        // 카카오맵 공식 JavaScript 키 적용 완료
+        const MAP_API_KEYS = {
+            kakaoJsKey: "6f4e2647513b9598dba6a6216178cb9c",
+            naverClientId: ""
+        };
+
+        let activeMapEngine = 'leaflet'; // 'kakao' | 'naver' | 'leaflet'
+        let kakaoFailedOnce = false;
+        let kakaoMapInstance = null;
+        let kakaoOverlays = [];
+        let naverMapInstance = null;
+        let naverMarkers = [];
+
+        function recenterNearbyMap() {
+            if (activeMapEngine === 'kakao' && kakaoMapInstance && window.kakao) {
+                kakaoMapInstance.setCenter(new kakao.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng));
+                kakaoMapInstance.setLevel(4);
+            } else if (activeMapEngine === 'naver' && naverMapInstance && window.naver) {
+                naverMapInstance.setCenter(new naver.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng));
+                naverMapInstance.setZoom(14);
+            } else if (leafletMap) {
+                leafletMap.setView([nearbyCenter.lat, nearbyCenter.lng], 14);
+            }
+        }
+
+        function initLeafletFallback() {
+            activeMapEngine = 'leaflet';
             if (typeof L === 'undefined') return;
             if (!leafletMap) {
                 leafletMap = L.map('nearbyMap', {
                     zoomControl: true,
                     attributionControl: false
-                }).setView([nearbyCenter.lat, nearbyCenter.lng], 12);
+                }).setView([nearbyCenter.lat, nearbyCenter.lng], 14);
 
-                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                const baseTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
                     maxZoom: 18
-                }).addTo(leafletMap);
+                });
+                baseTile.on('tileerror', function(err) {
+                    if (err && err.tile && !err.tile.dataset.fallbackApplied) {
+                        err.tile.dataset.fallbackApplied = '1';
+                        const coords = err.coords;
+                        err.tile.src = `https://a.tile.openstreetmap.fr/hot/${coords.z}/${coords.x}/${coords.y}.png`;
+                    }
+                });
+                baseTile.addTo(leafletMap);
 
                 leafletMarkersLayer = L.layerGroup().addTo(leafletMap);
+
+                leafletMap.on('zoomend moveend', function() {
+                    updateMapMarkers(false);
+                });
             }
             setTimeout(() => {
                 if (leafletMap) leafletMap.invalidateSize();
-                updateMapMarkers();
-            }, 120);
+                updateMapMarkers(true);
+            }, 150);
+        }
+
+        function ensureLeafletMap() {
+            // 1순위: 카카오맵 JavaScript 키가 설정된 경우 공식 카카오맵 구동 (미등록 도메인 시 자동 백업 지도 전환)
+            if (MAP_API_KEYS.kakaoJsKey && !kakaoFailedOnce) {
+                initKakaoMapEngine();
+                return;
+            }
+            // 2순위: 네이버지도 Client ID가 설정된 경우 공식 네이버지도 구동
+            if (MAP_API_KEYS.naverClientId) {
+                initNaverMapEngine();
+                return;
+            }
+            // 기본 백업 도로 지도 구동
+            initLeafletFallback();
+        }
+
+        function initKakaoMapEngine() {
+            const renderKakao = () => {
+                try {
+                    if (!window.kakao || !window.kakao.maps) {
+                        kakaoFailedOnce = true;
+                        initLeafletFallback();
+                        return;
+                    }
+                    kakao.maps.load(() => {
+                        activeMapEngine = 'kakao';
+                        const container = document.getElementById('nearbyMap');
+                        if (!kakaoMapInstance) {
+                            kakaoMapInstance = new kakao.maps.Map(container, {
+                                center: new kakao.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng),
+                                level: 4
+                            });
+                            const zoomControl = new kakao.maps.ZoomControl();
+                            kakaoMapInstance.addControl(zoomControl, kakao.maps.ControlPosition.LEFT);
+                        } else {
+                            kakaoMapInstance.relayout();
+                        }
+                        updateMapMarkers(true);
+                    });
+                } catch (err) {
+                    kakaoFailedOnce = true;
+                    initLeafletFallback();
+                }
+            };
+
+            if (window.kakao && window.kakao.maps) {
+                renderKakao();
+                return;
+            }
+
+            const existingScript = document.getElementById('kakaoMapSdkScript');
+            if (existingScript) {
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.id = 'kakaoMapSdkScript';
+            script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${MAP_API_KEYS.kakaoJsKey}&autoload=false`;
+            script.onload = renderKakao;
+            script.onerror = () => {
+                kakaoFailedOnce = true;
+                initLeafletFallback();
+            };
+            document.head.appendChild(script);
+        }
+
+        function initNaverMapEngine() {
+            activeMapEngine = 'naver';
+            const renderNaver = () => {
+                const container = document.getElementById('nearbyMap');
+                if (!naverMapInstance) {
+                    naverMapInstance = new naver.maps.Map(container, {
+                        center: new naver.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng),
+                        zoom: 14
+                    });
+                }
+                updateMapMarkers(true);
+            };
+            if (window.naver && window.naver.maps) {
+                renderNaver();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${MAP_API_KEYS.naverClientId}`;
+            script.onload = renderNaver;
+            document.head.appendChild(script);
         }
 
         // 사용자 GPS 현재 위치 요청
@@ -1558,30 +1756,180 @@
             }).sort((a, b) => a.distKm - b.distKm);
         }
 
+        function buildTentMarkerHtml() {
+            return `
+                <div style="position:relative;display:flex;flex-direction:column;align-items:center;transform:translate(-50%,-88%);">
+                    <div style="background:#102636;color:#ffffff;font-size:10.5px;font-weight:900;padding:2px 8px;border-radius:9999px;border:1.5px solid #ffffff;box-shadow:0 3px 8px rgba(0,0,0,0.28);margin-bottom:3px;white-space:nowrap;">
+                        내 위치
+                    </div>
+                    <div style="position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;">
+                        <span class="tent-pulse-ring"></span>
+                        <div style="position:relative;width:36px;height:36px;border-radius:9999px;background:linear-gradient(180deg,#ff8533 0%,#f06a1a 100%);border:2.5px solid #ffffff;box-shadow:0 4px 12px rgba(240,106,26,0.5);display:flex;align-items:center;justify-content:center;">
+                            <svg viewBox="0 0 32 32" width="21" height="21" fill="none">
+                                <path d="M16 5L4 25H28L16 5Z" fill="#FFF7ED" stroke="#7C2D12" stroke-width="1.8" stroke-linejoin="round"/>
+                                <path d="M16 5L11.5 25H20.5L16 5Z" fill="#FDBA74"/>
+                                <path d="M16 14L12.5 25H19.5L16 14Z" fill="#9A3412"/>
+                                <path d="M14 3L16 5L18 3" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function updateMapMarkers(recenter) {
+            const CAT_SHORT_TAG = {
+                eight: '8경',
+                food: '맛집',
+                camp: '캠핑',
+                tour: '관광',
+                valley: '계곡',
+                nature: '명산',
+                exp: '체험'
+            };
+            const tentMarkerHtml = buildTentMarkerHtml();
+            const sorted = getSortedNearbyPlaces();
+
+            // [A] 공식 카카오맵 엔진 렌더링
+            if (activeMapEngine === 'kakao' && kakaoMapInstance && window.kakao) {
+                kakaoOverlays.forEach(ov => ov.setMap(null));
+                kakaoOverlays = [];
+                if (recenter) {
+                    kakaoMapInstance.setCenter(new kakao.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng));
+                }
+                const tentOv = new kakao.maps.CustomOverlay({
+                    position: new kakao.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng),
+                    content: tentMarkerHtml,
+                    zIndex: 999
+                });
+                tentOv.setMap(kakaoMapInstance);
+                kakaoOverlays.push(tentOv);
+
+                sorted.slice(0, 30).forEach(({ place, coords }, idx) => {
+                    const color = getCatPinColor(place.cat);
+                    const catTag = CAT_SHORT_TAG[place.cat] || '명소';
+                    const shortName = place.name.replace(/\s*\([^)]*\)/g, '').trim();
+                    const displayTitle = shortName.length > 9 ? shortName.slice(0, 9) + '…' : shortName;
+                    const ov = new kakao.maps.CustomOverlay({
+                        position: new kakao.maps.LatLng(coords[0], coords[1]),
+                        content: `<div onclick="openDetailModal(${place.id})" class="map-speech-pill cursor-pointer" style="border:1.5px solid ${color};--pill-color:${color};">
+                            <span style="background:${color};color:#fff;font-size:9.5px;font-weight:800;padding:1.5px 5px;border-radius:9999px;line-height:1.1;">${catTag}</span>
+                            <span style="font-size:11px;font-weight:800;color:#122b3a;line-height:1.1;">${displayTitle}</span>
+                        </div>`,
+                        zIndex: 500 - idx
+                    });
+                    ov.setMap(kakaoMapInstance);
+                    kakaoOverlays.push(ov);
+                });
+                return;
+            }
+
+            // [B] 공식 네이버지도 엔진 렌더링
+            if (activeMapEngine === 'naver' && naverMapInstance && window.naver) {
+                naverMarkers.forEach(mk => mk.setMap(null));
+                naverMarkers = [];
+                if (recenter) {
+                    naverMapInstance.setCenter(new naver.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng));
+                }
+                const tentMk = new naver.maps.Marker({
+                    position: new naver.maps.LatLng(nearbyCenter.lat, nearbyCenter.lng),
+                    map: naverMapInstance,
+                    icon: { content: tentMarkerHtml },
+                    zIndex: 999
+                });
+                naverMarkers.push(tentMk);
+
+                sorted.slice(0, 30).forEach(({ place, coords }, idx) => {
+                    const color = getCatPinColor(place.cat);
+                    const catTag = CAT_SHORT_TAG[place.cat] || '명소';
+                    const shortName = place.name.replace(/\s*\([^)]*\)/g, '').trim();
+                    const displayTitle = shortName.length > 9 ? shortName.slice(0, 9) + '…' : shortName;
+                    const mk = new naver.maps.Marker({
+                        position: new naver.maps.LatLng(coords[0], coords[1]),
+                        map: naverMapInstance,
+                        icon: {
+                            content: `<div class="map-speech-pill cursor-pointer" style="border:1.5px solid ${color};--pill-color:${color};">
+                                <span style="background:${color};color:#fff;font-size:9.5px;font-weight:800;padding:1.5px 5px;border-radius:9999px;line-height:1.1;">${catTag}</span>
+                                <span style="font-size:11px;font-weight:800;color:#122b3a;line-height:1.1;">${displayTitle}</span>
+                            </div>`
+                        },
+                        zIndex: 500 - idx
+                    });
+                    naver.maps.Event.addListener(mk, 'click', () => openDetailModal(place.id));
+                    naverMarkers.push(mk);
+                });
+                return;
+            }
+
+            // [C] 기본 오픈 도로지도 엔진 (스마트 겹침 방지 알약 말풍선 적용)
             if (!leafletMap || !leafletMarkersLayer) return;
+            if (recenter) {
+                leafletMap.setView([nearbyCenter.lat, nearbyCenter.lng], 14, { animate: false });
+            }
             leafletMarkersLayer.clearLayers();
 
-            // 기준점 마커 (내 위치 또는 자라섬 캠핑장)
-            const centerHtml = `<div style="width:18px;height:18px;border-radius:9999px;background:#2563eb;border:3px solid #ffffff;box-shadow:0 0 0 5px rgba(37,99,235,0.28);"></div>`;
-            const centerIcon = L.divIcon({ html: centerHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
-            userCenterMarker = L.marker([nearbyCenter.lat, nearbyCenter.lng], { icon: centerIcon })
-                .bindPopup(`<b>${nearbyCenter.mode === 'gps' ? '내 현재 위치' : '자라섬 캠핑장 (기준점)'}</b>`)
+            // 1) 텐트 모양 내 위치 마커 배치 및 충돌 방지 영역 등록
+            const centerIcon = L.divIcon({
+                html: tentMarkerHtml,
+                className: 'leaflet-div-icon',
+                iconSize: [0, 0],
+                iconAnchor: [0, 0]
+            });
+            userCenterMarker = L.marker([nearbyCenter.lat, nearbyCenter.lng], {
+                icon: centerIcon,
+                zIndexOffset: 10000
+            })
+                .bindPopup(`<div style="text-align:center;font-weight:800;font-size:12px;color:#f06a1a;">⛺ ${nearbyCenter.mode === 'gps' ? '내 현재 위치' : '내 위치 (자라섬 캠핑장)'}</div>`)
                 .addTo(leafletMarkersLayer);
 
-            // 본 리플릿 등록 장소 마커만 표시
-            const sorted = getSortedNearbyPlaces();
-            sorted.forEach(({ place, coords, distKm }) => {
+            const placedBoxes = [];
+            const centerPt = leafletMap.latLngToContainerPoint([nearbyCenter.lat, nearbyCenter.lng]);
+            placedBoxes.push({ x1: centerPt.x - 28, y1: centerPt.y - 58, x2: centerPt.x + 28, y2: centerPt.y + 8 });
+
+            // 2) 주변 명소 배치: 겹치지 않는 곳은 [알약 말풍선], 밀집된 곳은 [깔끔한 원형 핀]으로 표시(확대 시 말풍선 자동 오픈)
+            sorted.forEach(({ place, coords, distKm }, idx) => {
                 const color = getCatPinColor(place.cat);
+                const catTag = CAT_SHORT_TAG[place.cat] || '명소';
+                const shortName = place.name.replace(/\s*\([^)]*\)/g, '').trim();
+                const displayTitle = shortName.length > 9 ? shortName.slice(0, 9) + '…' : shortName;
                 const links = getLinks(place);
                 const distTxt = formatDistLabel(distKm);
-                const pinHtml = `<div style="width:14px;height:14px;border-radius:9999px;background:${color};border:2.5px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`;
-                const pinIcon = L.divIcon({ html: pinHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
+
+                const pt = leafletMap.latLngToContainerPoint([coords[0], coords[1]]);
+                const halfW = Math.max(46, (displayTitle.length * 6) + 24);
+                const box = { x1: pt.x - halfW, y1: pt.y - 30, x2: pt.x + halfW, y2: pt.y + 2 };
+
+                const isOverlapping = placedBoxes.some(b =>
+                    !(box.x2 < b.x1 || box.x1 > b.x2 || box.y2 < b.y1 || box.y1 > b.y2)
+                );
+
+                let markerHtml = '';
+                if (!isOverlapping) {
+                    placedBoxes.push(box);
+                    markerHtml = `
+                        <div class="map-speech-pill" style="border:1.5px solid ${color};--pill-color:${color};">
+                            <span style="background:${color};color:#ffffff;font-size:9.5px;font-weight:800;padding:1.5px 5px;border-radius:9999px;line-height:1.1;">${catTag}</span>
+                            <span style="font-size:11px;font-weight:800;color:#122b3a;line-height:1.1;">${displayTitle}</span>
+                        </div>
+                    `;
+                } else {
+                    markerHtml = `
+                        <div style="width:12px;height:12px;border-radius:9999px;background:${color};border:2px solid #ffffff;box-shadow:0 2px 5px rgba(0,0,0,0.28);transform:translate(-50%,-50%);" title="${place.name}"></div>
+                    `;
+                }
+
+                const markerIcon = L.divIcon({
+                    html: markerHtml,
+                    className: 'leaflet-div-icon',
+                    iconSize: [0, 0],
+                    iconAnchor: [0, 0]
+                });
 
                 const popupHtml = `
-                    <div style="min-width:175px;">
-                        <div style="font-size:10px;font-weight:800;color:${color};">${place.sub} · ${distTxt}</div>
+                    <div style="min-width:185px;">
+                        <div style="font-size:10px;font-weight:800;color:${color};">[${catTag}] ${place.sub} · ${distTxt}</div>
                         <div style="font-size:13.5px;font-weight:800;color:#102636;margin-top:2px;">${place.name}</div>
+                        <div style="font-size:11px;color:#475569;margin-top:2px;line-height:1.35;">${place.summary}</div>
                         <div style="display:flex;gap:4px;margin-top:8px;">
                             <button onclick="openDetailModal(${place.id})" style="flex:1;background:#f06a1a;color:#fff;font-size:10.5px;font-weight:800;padding:5px 6px;border-radius:8px;">상세보기</button>
                             <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" style="flex:1;background:#03C75A;color:#fff;font-size:10.5px;font-weight:800;padding:5px 6px;border-radius:8px;text-align:center;text-decoration:none;">N지도</a>
@@ -1589,14 +1937,13 @@
                         </div>
                     </div>
                 `;
-                L.marker([coords[0], coords[1]], { icon: pinIcon })
+                L.marker([coords[0], coords[1]], {
+                    icon: markerIcon,
+                    zIndexOffset: !isOverlapping ? Math.max(1000, 6000 - idx * 20) : Math.max(50, 900 - idx * 5)
+                })
                     .bindPopup(popupHtml)
                     .addTo(leafletMarkersLayer);
             });
-
-            if (recenter) {
-                leafletMap.setView([nearbyCenter.lat, nearbyCenter.lng], nearbyCenter.mode === 'jara' ? 12 : 12);
-            }
         }
 
         function renderNearbyList() {
