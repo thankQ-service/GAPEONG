@@ -1563,17 +1563,27 @@
             if (!leafletMap) {
                 leafletMap = L.map('nearbyMap', {
                     zoomControl: true,
-                    attributionControl: false
+                    attributionControl: false,
+                    minZoom: 7,
+                    maxZoom: 19
                 }).setView([nearbyCenter.lat, nearbyCenter.lng], 14);
 
-                const baseTile = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-                    maxZoom: 18
+                // 한국 전 지역 고배율 확대(+ z=19) 및 축소(- z=7) 모두 빈 화면 없이 한글 지명이 나오는 타일 적용
+                const baseTile = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+                    subdomains: ['a', 'b', 'c'],
+                    minZoom: 7,
+                    maxNativeZoom: 19,
+                    maxZoom: 19
                 });
                 baseTile.on('tileerror', function(err) {
                     if (err && err.tile && !err.tile.dataset.fallbackApplied) {
                         err.tile.dataset.fallbackApplied = '1';
                         const coords = err.coords;
-                        err.tile.src = `https://a.tile.openstreetmap.fr/hot/${coords.z}/${coords.x}/${coords.y}.png`;
+                        err.tile.src = `https://mt1.google.com/vt/lyrs=m&hl=ko&gl=KR&x=${coords.x}&y=${coords.y}&z=${coords.z}`;
+                    } else if (err && err.tile && err.tile.dataset.fallbackApplied === '1') {
+                        err.tile.dataset.fallbackApplied = '2';
+                        const coords = err.coords;
+                        err.tile.src = `https://a.tile.openstreetmap.fr/osmfr/${coords.z}/${coords.x}/${coords.y}.png`;
                     }
                 });
                 baseTile.addTo(leafletMap);
