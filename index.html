@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome 6 CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet Interactive Map CDN (내 주변 위치기반 지도용) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <!-- Fonts: Pretendard (ExtraLight 200 ~ Black 900 전체 굵기 활용) -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 
@@ -23,14 +26,14 @@
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
         }
         body {
-            background-color: #e6dfd5;
-            font-weight: 400; /* 프리텐다드 Regular 기본 적용 */
+            background-color: #dbe7ee;
+            font-weight: 400;
             word-break: keep-all;
             overflow-wrap: break-word;
             -webkit-tap-highlight-color: transparent;
             -webkit-font-smoothing: antialiased;
         }
-        /* 프리텐다드 ExtraBold (800) - 상단 및 모달 타이틀 */
+        /* 프리텐다드 ExtraBold (800) */
         .title-font {
             font-family: 'Pretendard', sans-serif;
             font-weight: 800;
@@ -48,7 +51,6 @@
             font-weight: 600;
             letter-spacing: -0.02em;
         }
-        /* 프리텐다드 굵기 유틸리티 매칭 */
         .ptd-extralight { font-weight: 200; }
         .ptd-light { font-weight: 300; }
         .ptd-regular { font-weight: 400; }
@@ -57,13 +59,15 @@
         .ptd-bold { font-weight: 700; }
         .ptd-extrabold { font-weight: 800; }
         .ptd-black { font-weight: 900; }
+
         .poster-icon-btn {
             transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .poster-icon-btn:hover, .poster-icon-btn:active {
             transform: translateY(-4px) scale(1.04);
         }
-        /* Hide scrollbars for horizontal menus */
+
+        /* 가로 스크롤바 숨김 */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -71,22 +75,52 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* Active States (땡큐캠핑 시그니처 오렌지 #f06a1a) */
-        .top-tab.active {
-            color: #f06a1a;
-            border-bottom: 3px solid #f06a1a;
-            font-weight: 800;
+
+        /* 글래스모피즘 스퀘어 카테고리 탭 활성화 스타일 */
+        .glass-cat-tab {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            color: #163242;
+            transition: all 0.2s ease;
         }
+        .glass-cat-tab.active {
+            background: linear-gradient(180deg, #ff8533 0%, #f06a1a 100%);
+            border-color: #ffa366;
+            color: #ffffff;
+            box-shadow: 0 6px 16px rgba(240, 106, 26, 0.35);
+            transform: translateY(-1px);
+        }
+        .glass-cat-tab.active .tab-count-badge {
+            background: rgba(255, 255, 255, 0.95);
+            color: #e85d0c;
+        }
+        .glass-cat-tab.active svg [data-stroke="main"] {
+            stroke: #ffffff !important;
+        }
+        .glass-cat-tab.active svg [data-fill="accent"] {
+            fill: rgba(255, 255, 255, 0.35) !important;
+        }
+
+        /* 세부 필터 칩 활성화 */
         .sub-chip.active {
             background-color: #f06a1a;
             color: #ffffff;
             border-color: #f06a1a;
-            font-weight: 700;
+            font-weight: 800;
+            box-shadow: 0 3px 10px rgba(240, 106, 26, 0.28);
         }
+
+        /* 하단 네비게이션 활성화 */
         .bot-nav-btn.active {
             color: #f06a1a;
             font-weight: 800;
         }
+        .bot-nav-btn.active .bot-dot {
+            opacity: 1;
+        }
+
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
@@ -94,77 +128,170 @@
         .card-anim {
             animation: fadeUp 0.22s ease-out forwards;
         }
-        /* 카테고리 뷰 전용 자연스러운 배경 이미지 레이어 */
+
+        /* 네이처 글래스 배경 레이어 (호수·산 풍경 + 기존 일러스트 은은한 조화) */
+        .nature-scenic-bg {
+            background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=80');
+            background-size: cover;
+            background-position: center 25%;
+        }
         .cat-bg-image {
             background-image: url('https://i.postimg.cc/bv2V32Gh/seukeulinsyas-2026-10-30-172607.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
+
+        /* Leaflet 지도 z-index 격리 */
+        #nearbyMapWrapper {
+            isolation: isolate;
+            z-index: 5;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 16px !important;
+            padding: 2px !important;
+        }
+        .leaflet-popup-content {
+            margin: 10px 12px !important;
+            font-family: 'Pretendard', sans-serif !important;
+        }
     </style>
 </head>
 <body class="min-h-screen flex justify-center items-start sm:py-4">
 
     <!-- Mobile Online Leaflet Container -->
-    <div class="w-full max-w-[480px] bg-[#f7f5f2] sm:rounded-[28px] sm:shadow-2xl overflow-hidden flex flex-col relative sm:border-[6px] sm:border-white min-h-screen sm:min-h-0 sm:h-[92vh]">
+    <div class="w-full max-w-[480px] bg-[#eaf3f8] sm:rounded-[32px] sm:shadow-2xl overflow-hidden flex flex-col relative sm:border-[6px] sm:border-white min-h-screen sm:min-h-0 sm:h-[92vh]">
 
-        <!-- 카테고리 전용 은은한 백그라운드 레이어 (카테고리 진입 시 노출) -->
+        <!-- 카테고리 & 내주변 전용 네이처 글래스 백그라운드 레이어 -->
         <div id="catBgLayer" class="hidden fixed sm:absolute inset-0 max-w-[480px] mx-auto pointer-events-none z-0 overflow-hidden">
-            <div class="cat-bg-image w-full h-full opacity-35 scale-[1.02]"></div>
-            <div class="absolute inset-0 bg-gradient-to-b from-[#fbf0d5]/75 via-[#f7f5f2]/80 to-[#f7f5f2]/85"></div>
+            <div class="nature-scenic-bg w-full h-full opacity-55 scale-105"></div>
+            <div class="cat-bg-image absolute inset-0 w-full h-full opacity-25 mix-blend-overlay"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-[#cbe7f9]/85 via-[#8abccf]/78 to-[#3d7282]/88"></div>
         </div>
 
-        <!-- 1. Top Leaflet Header (내부 카테고리 진입 시 노출, 시그니처 오렌지 유지) -->
-        <header id="topHeader" class="hidden bg-[#f06a1a] text-white px-3.5 py-2.5 sticky top-0 z-30 shadow-sm flex-shrink-0">
-            <div class="flex items-center justify-between gap-2">
-                <button onclick="selectCategory('home')" class="flex items-center gap-2 text-left">
-                    <div class="bg-white rounded-lg px-1.5 py-1 flex items-center justify-center shadow-sm">
-                        <img src="https://i.postimg.cc/63116LGw/logo-2025.png" alt="가평 로고" class="h-5 w-auto object-contain" onerror="this.style.display='none'">
+        <!-- 1. Top Nature Glass Header (날씨 · 디데이 · 네이버 자동 검색바 포함) -->
+        <header id="topHeader" class="hidden px-3 pt-2.5 pb-1.5 z-30 flex-shrink-0">
+            <div class="rounded-[24px] bg-white/80 backdrop-blur-xl border border-white/85 shadow-[0_8px_24px_rgba(18,52,72,0.12)] px-3.5 py-3 space-y-2.5">
+                <!-- 상단: 가평 로고 + 타이틀(메인 이동) + 땡큐캠핑 로고 -->
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <a href="https://www.gp.go.kr/portal/index.do" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full bg-white shadow-sm border border-sky-100 flex items-center justify-center flex-shrink-0 hover:scale-105 transition" title="가평군청 포털 이동">
+                            <img src="https://i.postimg.cc/63116LGw/logo-2025.png" alt="가평 로고" class="h-4 w-auto object-contain" onerror="this.style.display='none'">
+                        </a>
+                        <button onclick="selectCategory('home')" class="text-left truncate">
+                            <span class="title-font text-[16.5px] tracking-tight text-[#122b3a] block leading-tight truncate">가평 관광·먹거리 탐방</span>
+                        </button>
                     </div>
-                    <div>
-                        <span class="title-font text-[16px] tracking-tight text-white block leading-tight">가평 관광, 먹거리 탐방</span>
-                        <span class="text-[10px] text-orange-100 font-medium block leading-none mt-0.5">터치하면 메인 화면으로 이동</span>
-                    </div>
-                </button>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                    <a href="https://m.thankqcamping.com/" target="_blank" rel="noopener noreferrer" class="bg-white rounded-lg px-1.5 py-1 shadow-sm flex items-center hover:opacity-90 transition" title="땡큐캠핑 이동">
+                    <a href="https://m.thankqcamping.com/" target="_blank" rel="noopener noreferrer" class="bg-white/95 rounded-full px-2.5 py-1.5 shadow-sm border border-sky-100 flex items-center flex-shrink-0 hover:bg-white transition" title="땡큐캠핑 이동">
                         <img src="https://i.postimg.cc/d0TcvPZF/image-(28).png" alt="땡큐캠핑 로고" class="h-4 w-auto object-contain" onerror="this.style.display='none'">
                     </a>
-                    <button onclick="openScheduleModal()" class="bg-white/20 hover:bg-white/30 border border-white/40 text-white px-2.5 py-1.5 rounded-xl text-[11px] font-bold transition">
-                        11.7~8 일정
+                </div>
+
+                <!-- 중단: 실시간 가평 날씨 배지 + 캠핑스쿨 날짜/디데이 배지 -->
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div id="weatherBadge" class="inline-flex items-center gap-1.5 bg-white/85 border border-white rounded-full px-3 py-1 text-[11.5px] font-bold text-[#183647] shadow-xs">
+                        <i id="weatherIcon" class="fa-solid fa-sun text-amber-500 text-xs"></i>
+                        <span id="weatherTempText">14° 가평</span>
+                    </div>
+                    <button onclick="openScheduleModal()" class="inline-flex items-center gap-1.5 bg-white/85 hover:bg-white border border-white rounded-full px-3 py-1 text-[11.5px] font-bold text-[#183647] shadow-xs transition">
+                        <span class="w-2 h-2 rounded-full bg-[#f06a1a]"></span>
+                        <span id="scheduleDdayText">11.7-8 · 캠핑스쿨</span>
                     </button>
                 </div>
+
+                <!-- 하단: 네이버 바로 검색창 (엔터/검색 시 자동으로 네이버 검색 이동) -->
+                <form onsubmit="handleNaverSearch(event)" class="relative flex items-center bg-[#e8f3fa]/85 border border-white/90 rounded-2xl px-3 py-2 shadow-inner">
+                    <button type="submit" class="text-[#56768a] hover:text-[#f06a1a] pr-2 flex items-center" title="네이버 검색">
+                        <i class="fa-solid fa-magnifying-glass text-[13px]"></i>
+                    </button>
+                    <input id="naverSearchInput" type="search" enterkeyhint="search" placeholder="청평호반, 잣두부 검색 (네이버 자동연결)" class="w-full bg-transparent text-[12.5px] font-semibold text-[#153040] placeholder-[#68879a] focus:outline-none">
+                    <button type="submit" class="ml-1.5 bg-[#f06a1a] hover:bg-[#d4550a] text-white text-[10.5px] font-extrabold px-2.5 py-1 rounded-xl flex-shrink-0 transition shadow-xs">
+                        N 검색
+                    </button>
+                </form>
             </div>
         </header>
 
-        <!-- 2. Sticky Category Tab Bar (내부 카테고리 진입 시 노출) -->
-        <nav id="topNavBar" class="hidden bg-white border-b border-orange-100 px-2 flex overflow-x-auto no-scrollbar sticky top-[52px] z-20 flex-shrink-0">
-            <button onclick="selectCategory('home')" id="tab-home" class="top-tab active px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                메인화면
+        <!-- 2. Glass Square Category Icon Bar (목업 스타일 스퀘어 카드형 가로 메뉴) -->
+        <nav id="topNavBar" class="hidden px-3 py-1.5 flex gap-2 overflow-x-auto no-scrollbar z-20 flex-shrink-0">
+            <!-- 메인 -->
+            <button onclick="selectCategory('home')" id="tab-home" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/mkNYM2PF/top-01-main-mein-3x.png" alt="메인" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">메인</span>
             </button>
-            <button onclick="selectCategory('eight')" id="tab-eight" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                가평 8경(8)
+
+            <!-- 가평8경 -->
+            <button onclick="selectCategory('eight')" id="tab-eight" class="glass-cat-tab active w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">8</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/RhQ7fVWJ/top-02-8view-gapyeong8gyeong-3x.png" alt="가평8경" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">가평8경</span>
             </button>
-            <button onclick="selectCategory('food')" id="tab-food" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                대표 맛집(24)
+
+            <!-- 대표맛집 -->
+            <button onclick="selectCategory('food')" id="tab-food" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">24</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/PJzWZrCD/top-03-food-daepyomasjib-3x.png" alt="대표맛집" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">대표맛집</span>
             </button>
-            <button onclick="selectCategory('camp')" id="tab-camp" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                캠핑장(18)
+
+            <!-- 캠핑장 -->
+            <button onclick="selectCategory('camp')" id="tab-camp" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">18</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/gjqVRkxZ/top-04-camping-kaempingjang-3x.png" alt="캠핑장" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">캠핑장</span>
             </button>
-            <button onclick="selectCategory('tour')" id="tab-tour" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                관광·문화(18)
+
+            <!-- 관광·문화 -->
+            <button onclick="selectCategory('tour')" id="tab-tour" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">18</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/7hM37Y53/top-05-culture-gwangwangmunhwa-3x.png" alt="관광·문화" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">관광·문화</span>
             </button>
-            <button onclick="selectCategory('valley')" id="tab-valley" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                가평 계곡(11)
+
+            <!-- 가평 계곡 -->
+            <button onclick="selectCategory('valley')" id="tab-valley" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">11</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/SR768NnW/top-06-valley-gapyeong-gyegog-3x.png" alt="가평계곡" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">가평계곡</span>
             </button>
-            <button onclick="selectCategory('nature')" id="tab-nature" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                명산·휴양림(13)
+
+            <!-- 명산·휴양림 -->
+            <button onclick="selectCategory('nature')" id="tab-nature" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">13</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/KjrPLv17/top-07-forest-myeongsansup-3x.png" alt="명산·숲" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">명산·숲</span>
             </button>
-            <button onclick="selectCategory('exp')" id="tab-exp" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                체험·정보(9)
+
+            <!-- 체험·정보 -->
+            <button onclick="selectCategory('exp')" id="tab-exp" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">9</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/gjqVRkxq/top-08-experience-cheheomjeongbo-3x.png" alt="체험·정보" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">체험·정보</span>
             </button>
-            <button onclick="selectCategory('all')" id="tab-all" class="top-tab px-3 py-2.5 text-xs whitespace-nowrap text-gray-500 transition">
-                전체(101)
+
+            <!-- 전체보기 -->
+            <button onclick="selectCategory('all')" id="tab-all" class="glass-cat-tab w-[68px] h-[68px] rounded-2xl flex flex-col items-center justify-center gap-1.5 flex-shrink-0 relative shadow-xs">
+                <span class="tab-count-badge absolute top-1.5 right-1.5 bg-[#fff0e5] text-[#e85d0c] text-[9.5px] font-black px-1.5 py-0.2 rounded-full leading-tight">101</span>
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/D0drsyS5/top-09-viewall-jeonchebogi-3x.png" alt="전체보기" class="w-full h-full object-contain">
+                </div>
+                <span class="text-[11px] font-extrabold leading-none tracking-tight">전체보기</span>
             </button>
         </nav>
 
@@ -207,150 +334,76 @@
                     </p>
                 </div>
 
-                <!-- 네비게이션 카테고리 매칭 플랫 일러스트 그리드 (이모지 미사용) -->
-                <div class="grid grid-cols-3 gap-x-3 gap-y-3.5 my-auto py-1 z-10">
+                <!-- 네비게이션 카테고리 매칭 전용 아이콘 그리드 -->
+                <div class="grid grid-cols-3 gap-x-3 gap-y-4 my-auto py-1 z-10">
 
                     <!-- 1. 가평 8경 -->
-                    <button onclick="selectCategory('eight')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <circle cx="72" cy="24" r="11" fill="#F29F38"/>
-                                <path d="M12 72 L38 32 L62 72 Z" fill="#5D8C68"/>
-                                <path d="M36 72 L64 26 L90 72 Z" fill="#3E6E4C"/>
-                                <path d="M18 55 Q34 44 50 55 Z" fill="#7D4E38"/>
-                                <rect x="24" y="55" width="3.5" height="11" fill="#B66E41"/>
-                                <rect x="40" y="55" width="3.5" height="11" fill="#B66E41"/>
-                                <rect x="20" y="66" width="28" height="4" rx="1" fill="#8C583A"/>
-                                <rect x="10" y="71" width="80" height="13" rx="6.5" fill="#5B9BD5"/>
-                                <path d="M22 77 Q30 74 38 77 T54 77 T70 77" stroke="#D6EEFF" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                            </svg>
+                    <button onclick="selectCategory('eight')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/RhQ7fVWJ/top-02-8view-gapyeong8gyeong-3x.png" alt="가평 8경" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">가평 8경</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">가평 8경</span>
                     </button>
 
                     <!-- 2. 대표 맛집 -->
-                    <button onclick="selectCategory('food')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <circle cx="42" cy="57" r="25" fill="#4A443F"/>
-                                <circle cx="42" cy="57" r="20" fill="#D95B26"/>
-                                <rect x="8" y="54" width="10" height="6" rx="3" fill="#4A443F"/>
-                                <circle cx="35" cy="51" r="5" fill="#F6C453"/>
-                                <circle cx="48" cy="53" r="5.5" fill="#FCE397"/>
-                                <path d="M32 63 Q42 69 51 61" stroke="#78A856" stroke-width="4" stroke-linecap="round" fill="none"/>
-                                <path d="M65 34 H87 L84 68 Q83 73 78 73 H74 Q69 73 68 68 Z" fill="#FFFDF9" stroke="#C58B59" stroke-width="2.5"/>
-                                <rect x="63" y="29" width="26" height="6" rx="3" fill="#B56E39"/>
-                                <rect x="67" y="46" width="18" height="11" rx="2" fill="#E39758"/>
-                            </svg>
+                    <button onclick="selectCategory('food')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/PJzWZrCD/top-03-food-daepyomasjib-3x.png" alt="대표 맛집" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">대표 맛집</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">대표 맛집</span>
                     </button>
 
                     <!-- 3. 캠핑장 -->
-                    <button onclick="selectCategory('camp')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <path d="M76 22 L63 44 H89 Z" fill="#4E7D52"/>
-                                <path d="M76 35 L60 60 H92 Z" fill="#3D6841"/>
-                                <rect x="73" y="60" width="6" height="12" fill="#7D5337"/>
-                                <path d="M12 74 L42 26 L72 74 Z" fill="#F06A1A"/>
-                                <path d="M42 26 L72 74 H54 L42 46 Z" fill="#D4550A"/>
-                                <path d="M31 74 L42 50 L53 74 Z" fill="#59351F"/>
-                                <path d="M68 83 L86 76 M68 76 L86 83" stroke="#8C532E" stroke-width="3.5" stroke-linecap="round"/>
-                                <path d="M77 62 Q85 71 77 78 Q69 71 77 62 Z" fill="#FF9F1C"/>
-                                <path d="M77 67 Q81 72 77 77 Q73 72 77 67 Z" fill="#FFE066"/>
-                            </svg>
+                    <button onclick="selectCategory('camp')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/gjqVRkxZ/top-04-camping-kaempingjang-3x.png" alt="캠핑장" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">캠핑장</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">캠핑장</span>
                     </button>
 
                     <!-- 4. 관광 · 문화 -->
-                    <button onclick="selectCategory('tour')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <rect x="26" y="42" width="48" height="36" rx="2" fill="#F4C07A"/>
-                                <path d="M20 44 L50 20 L80 44 Z" fill="#C9593B"/>
-                                <rect x="43" y="56" width="14" height="22" rx="7" fill="#7C4728"/>
-                                <rect x="32" y="48" width="8" height="9" rx="1.5" fill="#FFF7E8"/>
-                                <rect x="60" y="48" width="8" height="9" rx="1.5" fill="#FFF7E8"/>
-                                <circle cx="20" cy="68" r="9" fill="#EBA832"/>
-                                <rect x="18.5" y="74" width="3" height="8" fill="#7C4728"/>
-                                <circle cx="81" cy="68" r="9" fill="#E2735B"/>
-                                <rect x="79.5" y="74" width="3" height="8" fill="#7C4728"/>
-                            </svg>
+                    <button onclick="selectCategory('tour')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/7hM37Y53/top-05-culture-gwangwangmunhwa-3x.png" alt="관광 · 문화" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">관광 · 문화</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">관광 · 문화</span>
                     </button>
 
                     <!-- 5. 가평 계곡 -->
-                    <button onclick="selectCategory('valley')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <ellipse cx="26" cy="48" rx="16" ry="18" fill="#9E978E"/>
-                                <ellipse cx="74" cy="50" rx="16" ry="17" fill="#8A8279"/>
-                                <path d="M35 26 H65 L70 76 H30 Z" fill="#5CB6D6"/>
-                                <path d="M43 30 V70 M50 28 V73 M57 32 V68" stroke="#D9F4FC" stroke-width="3" stroke-linecap="round"/>
-                                <ellipse cx="24" cy="70" rx="15" ry="10" fill="#B5AFA6"/>
-                                <ellipse cx="76" cy="72" rx="15" ry="9" fill="#A39C93"/>
-                                <ellipse cx="50" cy="77" rx="32" ry="8" fill="#469EC0"/>
-                            </svg>
+                    <button onclick="selectCategory('valley')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/SR768NnW/top-06-valley-gapyeong-gyegog-3x.png" alt="가평 계곡" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">가평 계곡</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">가평 계곡</span>
                     </button>
 
                     <!-- 6. 명산 · 휴양림 -->
-                    <button onclick="selectCategory('nature')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <path d="M14 78 Q50 54 86 78 Z" fill="#7FB053"/>
-                                <path d="M30 28 L17 48 H43 Z" fill="#3B6E4C"/>
-                                <path d="M30 40 L14 63 H46 Z" fill="#2E593C"/>
-                                <rect x="27.5" y="63" width="5" height="10" fill="#734B30"/>
-                                <path d="M65 18 L51 39 H79 Z" fill="#4F8A5B"/>
-                                <path d="M65 31 L48 54 H82 Z" fill="#3F754A"/>
-                                <path d="M65 44 L46 67 H84 Z" fill="#315E3A"/>
-                                <rect x="62" y="67" width="6" height="10" fill="#734B30"/>
-                                <path d="M22 78 H78 M28 72 V81 M42 72 V81 M58 72 V81 M72 72 V81" stroke="#C8B69E" stroke-width="3" stroke-linecap="round"/>
-                            </svg>
+                    <button onclick="selectCategory('nature')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/KjrPLv17/top-07-forest-myeongsansup-3x.png" alt="명산 · 숲" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">명산 · 휴양림</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">명산 · 숲</span>
                     </button>
 
                     <!-- 7. 체험 · 정보 -->
-                    <button onclick="selectCategory('exp')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <path d="M26 56 A24 24 0 0 1 74 56 Z" fill="#6F8FAF"/>
-                                <path d="M46 32 A24 24 0 0 1 56 56 H46 Z" fill="#4A6785"/>
-                                <path d="M52 44 L76 30 L80 37 L56 50 Z" fill="#D98A3C"/>
-                                <rect x="24" y="56" width="52" height="24" rx="3" fill="#DFD5C5"/>
-                                <rect x="43" y="64" width="14" height="16" rx="7" fill="#7A5438"/>
-                                <circle cx="24" cy="26" r="3.5" fill="#F2AE30"/>
-                                <circle cx="82" cy="50" r="2.8" fill="#F2AE30"/>
-                                <path d="M36 16 L38 21 L43 23 L38 25 L36 30 L34 25 L29 23 L34 21 Z" fill="#F29F38"/>
-                            </svg>
+                    <button onclick="selectCategory('exp')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/gjqVRkxq/top-08-experience-cheheomjeongbo-3x.png" alt="체험 · 정보" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">체험 · 정보</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">체험 · 정보</span>
                     </button>
 
                     <!-- 8. 전체 둘러보기 -->
-                    <button onclick="selectCategory('all')" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
-                            <svg viewBox="0 0 100 100" class="w-full h-full">
-                                <polygon points="16,30 38,24 38,76 16,82" fill="#E8C68E"/>
-                                <polygon points="38,24 62,30 62,82 38,76" fill="#F5DFB5"/>
-                                <polygon points="62,30 84,24 84,76 62,82" fill="#E3BA78"/>
-                                <path d="M26 58 Q45 44 55 56 T76 46" stroke="#C96428" stroke-width="3" stroke-dasharray="4 3" fill="none" stroke-linecap="round"/>
-                                <path d="M50 18 C41 18 35 25 35 33 C35 44 50 56 50 56 C50 56 65 44 65 33 C65 25 59 18 50 18 Z" fill="#F06A1A"/>
-                                <circle cx="50" cy="32" r="6" fill="#FFFDF9"/>
-                            </svg>
+                    <button onclick="selectCategory('all')" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
+                            <img src="https://i.postimg.cc/D0drsyS5/top-09-viewall-jeonchebogi-3x.png" alt="전체 보기" class="w-full h-full object-contain">
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">전체 보기</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">전체 보기</span>
                     </button>
 
                     <!-- 9. 캠핑스쿨 일정 -->
-                    <button onclick="openScheduleModal()" class="poster-icon-btn flex flex-col items-center group">
-                        <div class="w-16 h-16 sm:w-24 sm:h-24 flex items-center justify-center">
+                    <button onclick="openScheduleModal()" class="poster-icon-btn flex flex-col items-center justify-center group">
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center p-1">
                             <svg viewBox="0 0 100 100" class="w-full h-full">
                                 <circle cx="50" cy="46" r="27" fill="#E69A3A"/>
                                 <circle cx="50" cy="46" r="22" fill="none" stroke="#8A4B19" stroke-width="2" stroke-dasharray="3 3"/>
@@ -360,7 +413,7 @@
                                 <rect x="34" y="80" width="32" height="5" rx="2.5" fill="#8A4B19"/>
                             </svg>
                         </div>
-                        <span class="pretty-label-font text-[13.5px] sm:text-[15.5px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-0.5">캠핑스쿨 안내</span>
+                        <span class="pretty-label-font text-[13.5px] sm:text-[15px] text-[#6d3b14] group-hover:text-[#f06a1a] mt-1 leading-tight">캠핑스쿨 안내</span>
                     </button>
 
                 </div>
@@ -373,29 +426,31 @@
                 </div>
             </section>
 
-            <!-- [카테고리 상세 리스트 뷰] (카테고리 선택 시 표시) -->
-            <div id="listViewWrapper" class="hidden pb-20 flex-grow">
-                <section class="px-3.5 pt-3 pb-2">
-                    <div id="categoryHeaderBox" class="bg-white/90 backdrop-blur-sm rounded-2xl p-3.5 border border-orange-100/90 shadow-sm mb-2 flex items-center justify-between gap-2">
-                        <div class="border-l-4 border-[#f06a1a] pl-2.5">
-                            <h3 id="catTitleText" class="font-extrabold text-gray-900 text-sm">가평 8경</h3>
-                            <p id="catDescText" class="text-[11px] text-gray-500 mt-0.5">가평을 대표하는 여덟 가지 절경</p>
+            <!-- [카테고리 상세 리스트 뷰 - 네이처 글래스모피즘 개편 (중간 아이콘 그리드 제외)] -->
+            <div id="listViewWrapper" class="hidden pb-24 flex-grow">
+                <section class="px-3.5 pt-2 pb-2">
+                    <!-- 타이틀 + 옆으로 밀어보세요 + 총 개수 -->
+                    <div class="flex items-baseline justify-between gap-2 mb-2 px-0.5">
+                        <div class="flex items-baseline gap-2 min-w-0">
+                            <h3 id="catTitleText" class="title-font text-[#0f2938] text-[19px] truncate">가평 8경</h3>
+                            <span class="text-[11.5px] font-semibold text-[#315568] whitespace-nowrap">옆으로 밀어보세요</span>
                         </div>
-                        <span id="resultCountBadge" class="bg-[#fff4ed] text-[#d4550a] border border-orange-200 text-xs font-extrabold px-2.5 py-1 rounded-full flex-shrink-0">총 8곳</span>
+                        <span id="resultCountBadge" class="bg-white/85 backdrop-blur-md text-[#d4550a] border border-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full flex-shrink-0 shadow-xs">총 8곳</span>
                     </div>
 
-                    <!-- 참고 이미지 안내 문구 -->
-                    <div id="photoNoticeBox" class="bg-amber-50/85 backdrop-blur-xs border border-amber-200/90 rounded-xl px-3 py-2 mb-2.5 text-[11px] text-amber-900 leading-snug">
-                        <b>사진 안내 :</b> 본 리플릿에 수록된 사진은 이해를 돕기 위한 <b>참고 이미지</b>이며, 실제 현장 사진 및 계절 풍경과 다를 수 있습니다.
+                    <!-- 가로 스와이프 히어로 카드 슬라이더 (목업 상단 비주얼 구현) -->
+                    <div id="heroCarouselSection" class="mb-3">
+                        <div id="heroSliderTrack" onscroll="updateHeroDots()" class="flex gap-3 overflow-x-auto snap-x snap-mandatory no-scrollbar pb-1"></div>
+                        <div id="heroDots" class="flex items-center justify-center gap-1.5 mt-2"></div>
                     </div>
 
-                    <!-- 세부 필터 칩 (잘림 방지 줄바꿈 적용) + 보기 방식 전환 (사진카드 / 간편목록) -->
-                    <div class="space-y-2 pb-1">
+                    <!-- 세부 필터 칩 + 사진카드/간편목록 보기 전환 -->
+                    <div class="bg-white/75 backdrop-blur-md rounded-2xl p-2.5 border border-white/85 shadow-sm space-y-2 mb-2">
                         <div id="subFilterContainer" class="flex flex-wrap items-center gap-1.5"></div>
-                        <div class="flex items-center justify-between gap-2 pt-0.5">
-                            <span class="text-[11px] font-semibold text-gray-500 pl-0.5">항목을 터치하면 상세 안내가 열립니다</span>
-                            <div class="flex items-center bg-white/95 border border-orange-200 rounded-full p-0.5 shadow-xs flex-shrink-0">
-                                <button onclick="setViewMode('card')" id="btnViewCard" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white">
+                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60">
+                            <p id="catDescText" class="text-[11px] font-semibold text-[#3a596b] truncate pl-0.5">항목을 터치하면 상세 안내가 열립니다</p>
+                            <div class="flex items-center bg-slate-100/90 border border-slate-200/80 rounded-full p-0.5 flex-shrink-0">
+                                <button onclick="setViewMode('card')" id="btnViewCard" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white shadow-xs">
                                     사진카드
                                 </button>
                                 <button onclick="setViewMode('list')" id="btnViewList" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]">
@@ -404,35 +459,131 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 참고 이미지 안내 문구 -->
+                    <div id="photoNoticeBox" class="bg-white/80 backdrop-blur-md border border-white/85 rounded-xl px-3 py-2 mb-1 text-[11px] text-[#355263] leading-snug shadow-xs">
+                        <b class="text-[#d4550a]">사진 안내 :</b> 수록된 사진은 이해를 돕기 위한 <b>참고 이미지</b>이며 실제 현장 및 계절 풍경과 다를 수 있습니다.
+                    </div>
                 </section>
 
-                <!-- 장소 카드 목록 -->
+                <!-- 장소 카드 / 간편목록 컨테이너 -->
                 <section id="cardsContainer" class="px-3.5 space-y-3 pb-4"></section>
+            </div>
+
+            <!-- [내 주변 위치기반 탐색 뷰 - 본 페이지에 수록된 101개 장소만 지도 & 실시간 거리순 표시] -->
+            <div id="nearbyViewWrapper" class="hidden pb-24 flex-grow">
+                <section class="px-3.5 pt-2 pb-2 space-y-2.5">
+                    <!-- 내 주변 상단 안내 및 위치 기준 스위치 -->
+                    <div class="bg-white/85 backdrop-blur-xl rounded-[22px] p-3.5 border border-white/90 shadow-md space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-[#f06a1a] animate-ping"></span>
+                                    <h3 class="title-font text-[17px] text-[#0f2938]">내 주변 리플릿 명소 찾기</h3>
+                                </div>
+                                <p id="nearbyStatusText" class="text-[11px] font-semibold text-[#476779] mt-0.5">본 가이드북에 수록된 101곳만 가까운 거리순으로 보여줍니다</p>
+                            </div>
+                            <span id="nearbyCountBadge" class="bg-[#fff4ed] text-[#d4550a] border border-orange-200 text-[11px] font-extrabold px-2.5 py-1 rounded-full flex-shrink-0">101곳</span>
+                        </div>
+
+                        <!-- 내 현재 위치 GPS 기준 vs 자라섬 캠핑장 기준 전환 -->
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button onclick="requestUserLocation()" id="btnLocGps" class="py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-[#f06a1a] text-white border-[#f06a1a] shadow-xs">
+                                <i class="fa-solid fa-location-crosshairs"></i>
+                                <span>내 현재 위치 기준</span>
+                            </button>
+                            <button onclick="useJarasumCenter()" id="btnLocJara" class="py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-white text-[#1f3d4d] border-slate-200 hover:border-[#f06a1a]">
+                                <i class="fa-solid fa-campground text-[#f06a1a]"></i>
+                                <span>자라섬 캠핑장 기준</span>
+                            </button>
+                        </div>
+
+                        <!-- 인터랙티브 위치기반 지도 (본 리플릿 등록 장소 전용 마커 표시) -->
+                        <div id="nearbyMapWrapper" class="relative rounded-2xl overflow-hidden border-2 border-white shadow-inner h-56 bg-sky-100">
+                            <div id="nearbyMap" class="w-full h-full"></div>
+                        </div>
+
+                        <!-- 현재 선택된 기준점 네이버지도 · 카카오맵 바로 열기 연동 -->
+                        <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                            <a id="nearbyNaverMapBtn" href="https://m.map.naver.com/search2/search.naver?query=%EA%B2%BD%EA%B8%B0%20%EA%B0%80%ED%8F%89%EA%B5%B0%20%EA%B0%80%ED%8F%89%EC%9D%8D%20%EC%9E%90%EB%9D%BC%EC%84%AC%EB%A1%9C%2060" target="_blank" rel="noopener noreferrer" class="py-2 rounded-xl bg-[#03C75A] text-white text-[11px] font-extrabold text-center shadow-xs flex items-center justify-center gap-1">
+                                <span class="bg-white text-[#03C75A] text-[9px] font-black px-1 rounded">N</span>
+                                <span>네이버지도 주변보기</span>
+                            </a>
+                            <a id="nearbyKakaoMapBtn" href="https://map.kakao.com/link/map/%EC%9E%90%EB%9D%BC%EC%84%AC%EC%BA%A0%ED%95%91%EC%9E%A5,37.8188,127.5186" target="_blank" rel="noopener noreferrer" class="py-2 rounded-xl bg-[#FEE500] text-[#191919] text-[11px] font-extrabold text-center shadow-xs flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-location-dot text-[10px]"></i>
+                                <span>카카오맵 주변보기</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 내 주변 카테고리 필터 + 사진카드/간편목록 토글 -->
+                    <div class="bg-white/80 backdrop-blur-md rounded-2xl p-2.5 border border-white/85 shadow-sm space-y-2">
+                        <div id="nearbyCatFilter" class="flex flex-wrap items-center gap-1.5"></div>
+                        <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-200/60">
+                            <span class="text-[11px] font-semibold text-[#3a596b] pl-0.5">가까운 순서대로 자동 정렬됩니다</span>
+                            <div class="flex items-center bg-slate-100/90 border border-slate-200/80 rounded-full p-0.5 flex-shrink-0">
+                                <button onclick="setViewMode('card')" id="btnNearbyCard" class="px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white shadow-xs">
+                                    사진카드
+                                </button>
+                                <button onclick="setViewMode('list')" id="btnNearbyList" class="px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]">
+                                    간편목록
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 거리순 정렬 리스트 -->
+                <section id="nearbyCardsContainer" class="px-3.5 space-y-3 pb-4"></section>
             </div>
 
         </main>
 
-        <!-- 4. Bottom Fixed Navigation Bar (내부 카테고리 탐색 시 노출) -->
-        <footer id="bottomNavBar" class="hidden bg-white/95 backdrop-blur-md border-t border-gray-200 px-2 py-2.5 items-center justify-around fixed sm:absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto z-30 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
-            <button onclick="selectCategory('home')" id="bot-home" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
-                메인화면
+        <!-- 4. Bottom Floating Glass Dock Navigation (동일 크기 · 균등 5열 아이콘 & 하단 텍스트 배치) -->
+        <footer id="bottomNavBar" class="hidden bg-white/92 backdrop-blur-xl border-t border-white/90 px-2 pt-2.5 pb-2.5 grid-cols-5 items-center fixed sm:absolute bottom-0 left-0 right-0 max-w-[480px] mx-auto z-30 rounded-t-[26px] shadow-[0_-8px_24px_rgba(15,45,65,0.14)]">
+            <button onclick="selectCategory('home')" id="bot-home" class="bot-nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-[#355263] py-0.5 relative">
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/28yynSLS/bottom-01-main-meinhwamyeon-3x.png" alt="메인화면" class="w-full h-full object-contain">
+                </div>
+                <span class="leading-none tracking-tight">메인화면</span>
+                <span class="bot-dot w-1 h-1 rounded-full bg-[#f06a1a] opacity-0"></span>
             </button>
-            <button onclick="selectCategory('eight')" id="bot-eight" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
-                가평8경
+
+            <button onclick="selectCategory('eight')" id="bot-eight" class="bot-nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-[#355263] py-0.5 relative">
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/tCJJF4n9/bottom-02-8view-gapyeong8gyeong-3x.png" alt="가평8경" class="w-full h-full object-contain">
+                </div>
+                <span class="leading-none tracking-tight">가평8경</span>
+                <span class="bot-dot w-1 h-1 rounded-full bg-[#f06a1a] opacity-0"></span>
             </button>
-            <button onclick="selectCategory('food')" id="bot-food" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
-                대표맛집
+
+            <button onclick="selectCategory('nearby')" id="bot-nearby" class="bot-nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-[#355263] py-0.5 relative">
+                <div id="botNearbyCircle" class="w-7 h-7 flex items-center justify-center flex-shrink-0 transition">
+                    <img src="https://i.postimg.cc/15XXD3Vs/bottom-03-nearby-naejubyeon-3x.png" alt="내주변" class="w-full h-full object-contain">
+                </div>
+                <span id="botNearbyLabel" class="leading-none tracking-tight">내주변</span>
+                <span class="bot-dot w-1 h-1 rounded-full bg-[#f06a1a] opacity-0"></span>
             </button>
-            <button onclick="selectCategory('camp')" id="bot-camp" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
-                캠핑장
+
+            <button onclick="selectCategory('food')" id="bot-food" class="bot-nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-[#355263] py-0.5 relative">
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/NfFFRj2Y/bottom-04-food-masjib-3x.png" alt="맛집" class="w-full h-full object-contain">
+                </div>
+                <span class="leading-none tracking-tight">맛집</span>
+                <span class="bot-dot w-1 h-1 rounded-full bg-[#f06a1a] opacity-0"></span>
             </button>
-            <button onclick="selectCategory('tour')" id="bot-tour" class="bot-nav-btn text-xs text-gray-500 py-1 px-2">
-                관광·자연
+
+            <button onclick="selectCategory('camp')" id="bot-camp" class="bot-nav-btn flex flex-col items-center justify-center gap-1 text-[11px] font-bold text-[#355263] py-0.5 relative">
+                <div class="w-7 h-7 flex items-center justify-center flex-shrink-0">
+                    <img src="https://i.postimg.cc/Dy001w48/bottom-05-camping-kaempingjang-3x.png" alt="캠핑장" class="w-full h-full object-contain">
+                </div>
+                <span class="leading-none tracking-tight">캠핑장</span>
+                <span class="bot-dot w-1 h-1 rounded-full bg-[#f06a1a] opacity-0"></span>
             </button>
         </footer>
 
         <!-- Toast Notification Box (alert 미사용) -->
-        <div id="toastBox" class="hidden fixed bottom-16 left-1/2 -translate-x-1/2 bg-gray-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg z-50 whitespace-nowrap">
+        <div id="toastBox" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 bg-gray-900/95 text-white text-xs font-bold px-4 py-2.5 rounded-full shadow-lg z-50 whitespace-nowrap">
             <span id="toastMsg">주소가 복사되었습니다.</span>
         </div>
 
@@ -474,7 +625,7 @@
             </div>
         </div>
 
-        <!-- 6. Camping School Schedule & Mission Stamp Modal (캠핑스쿨 리플릿 정보 유지) -->
+        <!-- 6. Camping School Schedule & Mission Stamp Modal -->
         <div id="scheduleModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onclick="closeScheduleModal(event)">
             <div class="bg-white w-full max-w-[420px] rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
                 <div class="bg-[#1b6143] text-white p-4 flex items-center justify-between">
@@ -487,7 +638,6 @@
                     </button>
                 </div>
                 <div class="p-4 space-y-3 text-xs">
-                    <!-- 미션 스탬프 안내 -->
                     <div class="bg-[#1b6143]/5 border border-[#1b6143]/20 rounded-2xl p-3">
                         <p class="font-extrabold text-[#1b6143] mb-2">미션 스탬프 (모두 모으면 소정의 선물 증정)</p>
                         <div class="grid grid-cols-4 gap-1.5 text-center">
@@ -534,7 +684,7 @@
     </div>
 
     <script>
-        // 카테고리별 참고 이미지 풀 (깨짐 없는 안정적 고화질 이미지 + onerror 폴백 지원)
+        // 카테고리별 참고 이미지 풀
         const IMG = {
             island: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80",
             autumn: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=700&q=80",
@@ -709,6 +859,46 @@
             607: "자라섬 24분", 608: "자라섬 30분", 609: "자라섬 32분"
         };
 
+        // 내 주변 위치기반 탐색을 위한 전체 101개 장소 실제 가평 좌표 매핑 (자라섬 오토캠핑장: 37.8188, 127.5186)
+        const JARASUM_COORDS = { lat: 37.8188, lng: 127.5186, label: "자라섬 캠핑장" };
+        const PLACE_COORDS = {
+            // 1. 가평 8경
+            1: [37.7165, 127.4585], 2: [37.7568, 127.4525], 3: [37.8558, 127.4885], 4: [37.9515, 127.4892],
+            5: [37.9862, 127.4485], 6: [37.8715, 127.3325], 7: [37.7725, 127.3325], 8: [37.5965, 127.4895],
+            // 2. 대표 맛집 (24곳)
+            101: [37.8235, 127.5142], 102: [37.8335, 127.5135], 103: [37.8295, 127.5146], 104: [37.8248, 127.5136],
+            105: [37.8168, 127.5055], 106: [37.8245, 127.5140], 107: [37.8185, 127.5068], 108: [37.8425, 127.5262],
+            109: [37.7525, 127.3595], 110: [37.8545, 127.4902], 111: [37.8086, 127.5238], 112: [37.8122, 127.4995],
+            113: [37.7625, 127.5285], 114: [37.7815, 127.5342], 115: [37.7562, 127.5015], 116: [37.7215, 127.4195],
+            117: [37.7815, 127.3685], 118: [37.7525, 127.4235], 119: [37.8075, 127.5245], 120: [37.8309, 127.5142],
+            121: [37.8108, 127.5222], 122: [37.8091, 127.5235], 123: [37.6765, 127.4885], 124: [37.7652, 127.3695],
+            // 3. 캠핑장 (18곳)
+            201: [37.9585, 127.4395], 202: [37.8188, 127.5186], 203: [37.8995, 127.4578], 204: [37.7685, 127.3825],
+            205: [37.9032, 127.5492], 206: [37.9012, 127.5485], 207: [37.8985, 127.5315], 208: [37.8542, 127.3385],
+            209: [37.8485, 127.3865], 210: [37.7585, 127.3925], 211: [37.6585, 127.5025], 212: [37.9315, 127.5415],
+            213: [37.8125, 127.3525], 214: [37.8565, 127.3395], 215: [37.7612, 127.3485], 216: [37.7985, 127.3495],
+            217: [37.8285, 127.4765], 218: [37.6845, 127.5085],
+            // 4. 관광·문화 (18곳)
+            301: [37.8152, 127.5215], 302: [37.8062, 127.5255], 303: [37.8195, 127.5162], 304: [37.8286, 127.5154],
+            305: [37.8065, 127.5250], 306: [37.7439, 127.3526], 307: [37.7725, 127.3325], 308: [37.8328, 127.4612],
+            309: [37.7568, 127.4525], 310: [37.7149, 127.4906], 311: [37.6695, 127.5265], 312: [37.7725, 127.3765],
+            313: [37.7252, 127.4225], 314: [37.8825, 127.5425], 315: [37.8962, 127.4695], 316: [37.6285, 127.4795],
+            317: [37.8385, 127.3465], 318: [37.8685, 127.5365],
+            // 5. 가평 계곡 (11곳)
+            401: [37.8558, 127.4885], 402: [37.8342, 127.4588], 403: [37.9515, 127.4892], 404: [37.8995, 127.4578],
+            405: [37.9315, 127.5415], 406: [37.9895, 127.4665], 407: [37.5965, 127.4895], 408: [37.5895, 127.4765],
+            409: [37.8685, 127.3625], 410: [37.8765, 127.3265], 411: [37.6885, 127.4185],
+            // 6. 명산·자연휴양림 (13곳)
+            501: [37.5965, 127.4895], 502: [37.9515, 127.4892], 503: [37.8715, 127.3325], 504: [37.9752, 127.5185],
+            505: [37.7725, 127.3325], 506: [37.8558, 127.4885], 507: [37.9515, 127.4892], 508: [37.9685, 127.4125],
+            509: [37.5965, 127.4895], 510: [37.8342, 127.4588], 511: [37.8995, 127.4578], 512: [37.8188, 127.5186],
+            513: [37.7685, 127.3825],
+            // 7. 체험·축제·정보 (9곳)
+            601: [37.8170, 127.5198], 602: [37.8304, 127.5138], 603: [37.8146, 127.5108], 604: [37.8146, 127.5108],
+            605: [37.8318, 127.5082], 606: [37.8238, 127.5065], 607: [37.9045, 127.4652], 608: [37.8765, 127.3265],
+            609: [37.6385, 127.5195]
+        };
+
         function getJaraTime(place) {
             if (JARA_TIME_MAP[place.id]) return JARA_TIME_MAP[place.id];
             const match = place.badge && place.badge.match(/자라섬\s*\d+분/);
@@ -719,43 +909,43 @@
         // 카테고리 메타데이터
         const CATEGORY_META = {
             eight: {
-                title: "가평 8경 (공식 제1경~제8경)",
+                shortTitle: "가평 8경",
                 desc: "가평을 대표하는 호수·계곡·단풍·잣나무숲 8대 비경",
                 subs: ["전체", "호수·강변절경", "계곡·단풍절경", "명산·숲절경"]
             },
             food: {
-                title: "자라섬 근접 평점순 대표 맛집 · 카페 (24곳)",
-                desc: "네이버 플레이스 평점 높은 순 · 자라섬 가까운 거리 기준 엄선",
+                shortTitle: "대표 맛집 · 카페",
+                desc: "네이버 평점순 · 자라섬 가까운 거리 기준 엄선 (24곳)",
                 subs: ["전체", "한식·일식·양식", "카페·베이커리", "닭갈비·막국수"]
             },
             camp: {
-                title: "땡큐캠핑 가평 인기 캠핑장 (랜덤 추천 · 18곳)",
-                desc: "들어올 때마다 순서가 랜덤으로 바뀌며 땡큐캠핑 페이지로 바로 연결됩니다",
+                shortTitle: "가평 인기 캠핑장",
+                desc: "랜덤 추천 노출 · 땡큐캠핑 예약 페이지 직결 (18곳)",
                 subs: ["전체", "계곡·숲속오토", "공영·대형명소", "키즈·글램핑"]
             },
             tour: {
-                title: "가평 관광 · 문화 명소 (18곳)",
-                desc: "공식 목차 전수 수록 · 네이버 평점 및 자라섬 근접순 배치",
+                shortTitle: "관광 · 문화 명소",
+                desc: "공식 목차 전수 수록 · 평점 및 자라섬 근접순 (18곳)",
                 subs: ["전체", "수목원·자연테마", "레저·액티비티", "유럽마을·박물관"]
             },
             valley: {
-                title: "가평 청정 계곡 가이드 (11곳)",
+                shortTitle: "가평 청정 계곡",
                 desc: "공식 관광 리플릿 목차의 11대 계곡 전수 수록",
                 subs: ["전체", "가평읍·북면", "설악·청평·조종"]
             },
             nature: {
-                title: "명산 · 자연휴양림 · 공영캠핑장 (13곳)",
-                desc: "가평 5대 명산과 도립·군립공원 및 자연휴양림 전수 안내",
+                shortTitle: "명산 · 자연휴양림",
+                desc: "가평 5대 명산과 도립·군립공원 및 자연휴양림 안내",
                 subs: ["전체", "가평 5대 명산", "도립·군립공원", "휴양림·공영캠핑"]
             },
             exp: {
-                title: "체험 · 축제 · 관광정보 (9곳)",
-                desc: "자라섬 근접 축제·특산품·순환버스 및 별자리·농촌체험 안내",
+                shortTitle: "체험 · 축제 · 정보",
+                desc: "자라섬 근접 축제·특산품·순환버스 및 천문·농촌체험",
                 subs: ["전체", "축제·특산·교통", "체험·천문·템플", "문화재·체육"]
             },
             all: {
-                title: "가평 관광 · 먹거리 · 캠핑장 전체보기 (101곳)",
-                desc: "공식 리플릿 전 항목 + 자라섬 근접 맛집·카페 + 땡큐캠핑 캠핑장",
+                shortTitle: "가평 전체 둘러보기",
+                desc: "공식 리플릿 전 항목 + 맛집·카페 + 땡큐캠핑 캠핑장 (101곳)",
                 subs: ["전체"]
             }
         };
@@ -764,29 +954,106 @@
         let currentSub = '전체';
         let viewMode = 'card'; // 'card' (사진카드) | 'list' (간편목록)
 
-        // 보기 방식 전환 (사진카드 <-> 간편목록)
-        function setViewMode(mode) {
-            viewMode = mode;
-            const btnCard = document.getElementById('btnViewCard');
-            const btnList = document.getElementById('btnViewList');
-            const photoNotice = document.getElementById('photoNoticeBox');
-            const cardsContainer = document.getElementById('cardsContainer');
+        // 내 주변 전용 상태
+        let nearbyCenter = { lat: JARASUM_COORDS.lat, lng: JARASUM_COORDS.lng, mode: 'jara' };
+        let nearbyFilterCat = 'all';
+        let leafletMap = null;
+        let leafletMarkersLayer = null;
+        let userCenterMarker = null;
 
-            if (mode === 'list') {
-                btnList.className = "px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white";
-                btnCard.className = "px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]";
-                if (photoNotice) photoNotice.classList.add('hidden');
-                cardsContainer.classList.remove('space-y-3');
-                cardsContainer.classList.add('space-y-2');
-            } else {
-                btnCard.className = "px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white";
-                btnList.className = "px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]";
-                if (photoNotice) photoNotice.classList.remove('hidden');
-                cardsContainer.classList.remove('space-y-2');
-                cardsContainer.classList.add('space-y-3');
+        // 1) 상단 실시간 가평 날씨 & 캠핑스쿨 디데이 초기화
+        function initHeaderWidgets() {
+            // 캠핑스쿨(2026-11-07) 기준 D-Day 계산
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const eventStart = new Date(2026, 10, 7);
+            const eventEnd = new Date(2026, 10, 8);
+            const diffDays = Math.round((eventStart - today) / 86400000);
+            const ddayEl = document.getElementById('scheduleDdayText');
+            if (ddayEl) {
+                if (diffDays > 0) {
+                    ddayEl.textContent = `11.7-8 · D-${diffDays}`;
+                } else if (today >= eventStart && today <= eventEnd) {
+                    ddayEl.textContent = `11.7-8 · D-DAY`;
+                } else {
+                    ddayEl.textContent = `11.7-8 · 캠핑스쿨`;
+                }
             }
 
-            renderCards();
+            // 가평 실시간 기온 호출 (Open-Meteo 무료 API, 실패 시 기본 가을 기온 유지)
+            fetch('https://api.open-meteo.com/v1/forecast?latitude=37.8315&longitude=127.5095&current_weather=true')
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.current_weather) {
+                        const temp = Math.round(data.current_weather.temperature);
+                        const code = data.current_weather.weathercode;
+                        const iconEl = document.getElementById('weatherIcon');
+                        const tempEl = document.getElementById('weatherTempText');
+                        if (tempEl) tempEl.textContent = `${temp}° 가평`;
+                        if (iconEl) {
+                            if (code === 0) iconEl.className = 'fa-solid fa-sun text-amber-500 text-xs';
+                            else if (code <= 3) iconEl.className = 'fa-solid fa-cloud-sun text-amber-500 text-xs';
+                            else if (code <= 48) iconEl.className = 'fa-solid fa-smog text-slate-500 text-xs';
+                            else if (code <= 67 || (code >= 80 && code <= 82)) iconEl.className = 'fa-solid fa-cloud-rain text-sky-500 text-xs';
+                            else if (code <= 77) iconEl.className = 'fa-regular fa-snowflake text-sky-400 text-xs';
+                            else iconEl.className = 'fa-solid fa-cloud text-slate-500 text-xs';
+                        }
+                    }
+                })
+                .catch(() => {});
+        }
+
+        // 2) 상단 검색바 -> 네이버 검색 자동 이동
+        function handleNaverSearch(event) {
+            if (event) event.preventDefault();
+            const input = document.getElementById('naverSearchInput');
+            const raw = (input ? input.value : '').trim();
+            const queryText = raw
+                ? ((raw.includes('가평') || raw.includes('자라섬') || raw.includes('남이섬') || raw.includes('청평')) ? raw : `가평 ${raw}`)
+                : '가평 자라섬 맛집 관광';
+            const naverUrl = `https://search.naver.com/search.naver?query=${encodeURIComponent(queryText)}`;
+            const link = document.createElement('a');
+            link.href = naverUrl;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // 보기 방식 전환 (사진카드 <-> 간편목록, 카테고리 뷰 & 내 주변 뷰 동시 동기화)
+        function setViewMode(mode) {
+            viewMode = mode;
+            const activeCls = "px-2.5 py-1 rounded-full text-[11px] font-extrabold transition bg-[#f06a1a] text-white shadow-xs";
+            const inactiveCls = "px-2.5 py-1 rounded-full text-[11px] font-bold transition text-gray-600 hover:text-[#f06a1a]";
+
+            ['btnViewCard', 'btnNearbyCard'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = (mode === 'card') ? activeCls : inactiveCls;
+            });
+            ['btnViewList', 'btnNearbyList'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = (mode === 'list') ? activeCls : inactiveCls;
+            });
+
+            const photoNotice = document.getElementById('photoNoticeBox');
+            if (photoNotice) {
+                if (mode === 'list') photoNotice.classList.add('hidden');
+                else photoNotice.classList.remove('hidden');
+            }
+
+            ['cardsContainer', 'nearbyCardsContainer'].forEach(id => {
+                const c = document.getElementById(id);
+                if (!c) return;
+                c.classList.toggle('space-y-3', mode === 'card');
+                c.classList.toggle('space-y-2', mode === 'list');
+            });
+
+            if (currentCat === 'nearby') {
+                renderNearbyList();
+            } else if (currentCat !== 'home') {
+                renderCards();
+            }
         }
 
         // 캠핑장 카테고리 순서 랜덤 셔플 (Fisher-Yates 알고리즘)
@@ -808,20 +1075,19 @@
             });
         }
 
-        // 이미지 깨짐 방지 폴백 URL
         function getFallbackImg(name) {
             return `https://placehold.co/600x400/f06a1a/ffffff?text=${encodeURIComponent(name)}`;
         }
 
-        // 네이버지도·카카오맵 100% 정확한 주소 검색을 위한 순수 주소 정제 함수
+        // 순수 도로명·지번 주소 정제 함수
         function cleanSearchAddress(addr) {
             return addr
-                .replace(/\([^)]*\)/g, '') // 괄호 부가설명 제거
+                .replace(/\([^)]*\)/g, '')
                 .replace(/\s+/g, ' ')
                 .trim();
         }
 
-        // 각 항목별 외부 링크 생성 (모바일·PC 모두 완벽 호환되는 네이버지도·카카오맵 주소 검색 URL 및 땡큐캠핑 고유 예약 URL 연동)
+        // 외부 바로가기 링크 생성
         function getLinks(place) {
             const pureAddr = cleanSearchAddress(place.addr);
             const encodedAddr = encodeURIComponent(pureAddr);
@@ -834,7 +1100,7 @@
             };
         }
 
-        // 클립보드 주소 복사 (iframe 호환 execCommand)
+        // 클립보드 주소 복사
         function copyAddress(addr, event) {
             if (event) event.stopPropagation();
             const pureAddr = cleanSearchAddress(addr);
@@ -861,51 +1127,82 @@
             }, 2200);
         }
 
-        // 카테고리 전환 핸들러 (메인 포스터 화면 ↔ 상세 카테고리 뷰)
+        // 두 좌표 간 직선거리(km) 계산 (Haversine)
+        function calcDistanceKm(lat1, lng1, lat2, lng2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                      Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        function formatDistLabel(km) {
+            const estMin = Math.max(1, Math.round(km * 1.65));
+            const kmStr = km < 1 ? `${Math.max(100, Math.round(km * 1000))}m` : `${km.toFixed(1)}km`;
+            return `${kmStr} · 차량 약 ${estMin}분`;
+        }
+
+        // 카테고리 & 내 주변 전환 핸들러
         function selectCategory(cat) {
             currentCat = cat;
             currentSub = '전체';
 
-            // 상단 탭 활성화 표시
-            document.querySelectorAll('.top-tab').forEach(btn => btn.classList.remove('active'));
+            // 상단 글래스 탭 활성화 표시
+            document.querySelectorAll('.glass-cat-tab').forEach(btn => btn.classList.remove('active'));
             const activeTop = document.getElementById(`tab-${cat}`);
             if (activeTop) {
                 activeTop.classList.add('active');
                 activeTop.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
 
-            // 하단 바 활성화 표시
+            // 하단 독 활성화 표시
             document.querySelectorAll('.bot-nav-btn').forEach(btn => btn.classList.remove('active'));
-            const botKey = (cat === 'valley' || cat === 'nature' || cat === 'exp' || cat === 'all') ? 'tour' : cat;
-            const activeBot = document.getElementById(`bot-${botKey}`);
+            const activeBot = document.getElementById(`bot-${cat}`);
             if (activeBot) activeBot.classList.add('active');
 
             const posterHome = document.getElementById('posterHomeSection');
             const listView = document.getElementById('listViewWrapper');
+            const nearbyView = document.getElementById('nearbyViewWrapper');
             const topHeader = document.getElementById('topHeader');
             const topNavBar = document.getElementById('topNavBar');
             const bottomNavBar = document.getElementById('bottomNavBar');
             const catBgLayer = document.getElementById('catBgLayer');
 
             if (cat === 'home') {
-                // 메인 화면은 요청하신 포스터형 일러스트 화면만 깔끔하게 노출
+                // 메인 포스터 화면 그대로 유지 노출
                 posterHome.classList.remove('hidden');
                 listView.classList.add('hidden');
+                nearbyView.classList.add('hidden');
                 topHeader.classList.add('hidden');
                 topNavBar.classList.add('hidden');
                 bottomNavBar.classList.add('hidden');
-                bottomNavBar.classList.remove('flex');
+                bottomNavBar.classList.remove('grid');
                 catBgLayer.classList.add('hidden');
-            } else {
+            } else if (cat === 'nearby') {
+                // 위치기반 내 주변 전용 화면 노출
                 posterHome.classList.add('hidden');
+                listView.classList.add('hidden');
+                nearbyView.classList.remove('hidden');
+                topHeader.classList.remove('hidden');
+                topNavBar.classList.remove('hidden');
+                bottomNavBar.classList.remove('hidden');
+                bottomNavBar.classList.add('grid');
+                catBgLayer.classList.remove('hidden');
+
+                initNearbyView();
+            } else {
+                // 일반 카테고리 상세 뷰 노출
+                posterHome.classList.add('hidden');
+                nearbyView.classList.add('hidden');
                 listView.classList.remove('hidden');
                 topHeader.classList.remove('hidden');
                 topNavBar.classList.remove('hidden');
                 bottomNavBar.classList.remove('hidden');
-                bottomNavBar.classList.add('flex');
+                bottomNavBar.classList.add('grid');
                 catBgLayer.classList.remove('hidden');
 
-                // 캠핑장 탭 진입 시 매번 랜덤 순서로 섞기
                 if (cat === 'camp' || cat === 'all') {
                     shuffleCampsites();
                 }
@@ -917,20 +1214,72 @@
             document.getElementById('mainScroll').scrollTop = 0;
         }
 
+        // 상단 가로 스와이프 히어로 캐러셀 렌더링
+        function renderHeroCarousel(items) {
+            const track = document.getElementById('heroSliderTrack');
+            const dots = document.getElementById('heroDots');
+            const heroSlides = items.slice(0, 8);
+
+            if (!heroSlides.length) {
+                track.innerHTML = '';
+                dots.innerHTML = '';
+                return;
+            }
+
+            track.innerHTML = heroSlides.map((place) => {
+                const fallback = getFallbackImg(place.name);
+                const shortBadge = place.badge.split('·')[0].trim();
+                return `
+                <div onclick="openDetailModal(${place.id})" class="w-[85%] flex-shrink-0 snap-center h-44 rounded-[22px] overflow-hidden relative shadow-[0_8px_20px_rgba(12,40,58,0.2)] border-2 border-white/90 cursor-pointer group">
+                    <img src="${place.img}" alt="${place.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-black/10"></div>
+                    <span class="absolute top-3 left-3 bg-[#f06a1a] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+                        ${shortBadge}
+                    </span>
+                    <span class="absolute top-3 right-3 bg-white/88 backdrop-blur-md text-[#163242] text-[10.5px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+                        ${place.sub}
+                    </span>
+                    <div class="absolute bottom-3 left-3.5 right-3.5 text-white">
+                        <h4 class="title-font text-[19px] leading-tight drop-shadow">${place.name}</h4>
+                        <p class="text-[11.5px] text-white/90 truncate mt-0.5">${place.summary}</p>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            dots.innerHTML = heroSlides.map((_, idx) => `
+                <span class="hero-dot h-1.5 rounded-full transition-all ${idx === 0 ? 'w-4 bg-[#f06a1a]' : 'w-1.5 bg-white/75'}"></span>
+            `).join('');
+            track.scrollLeft = 0;
+        }
+
+        function updateHeroDots() {
+            const track = document.getElementById('heroSliderTrack');
+            const dotEls = document.querySelectorAll('#heroDots .hero-dot');
+            if (!track || !dotEls.length || !track.firstElementChild) return;
+            const cardWidth = track.firstElementChild.offsetWidth + 12;
+            const activeIdx = Math.min(dotEls.length - 1, Math.max(0, Math.round(track.scrollLeft / cardWidth)));
+            dotEls.forEach((dot, idx) => {
+                dot.className = `hero-dot h-1.5 rounded-full transition-all ${idx === activeIdx ? 'w-4 bg-[#f06a1a]' : 'w-1.5 bg-white/75'}`;
+            });
+        }
+
         // 세부 필터 칩 렌더링
         function renderSubFilters() {
             const meta = CATEGORY_META[currentCat];
             const container = document.getElementById('subFilterContainer');
-            document.getElementById('catTitleText').textContent = meta.title;
+            document.getElementById('catTitleText').textContent = meta.shortTitle;
             document.getElementById('catDescText').textContent = meta.desc;
 
-            if (!meta.subs || meta.subs.length === 0) {
+            if (!meta.subs || meta.subs.length <= 1) {
                 container.innerHTML = '';
+                container.classList.add('hidden');
                 return;
             }
+            container.classList.remove('hidden');
 
             container.innerHTML = meta.subs.map(sub => `
-                <button onclick="selectSubFilter('${sub}')" class="sub-chip ${currentSub === sub ? 'active' : 'bg-white text-gray-600 border-gray-200'} border px-2.5 py-1.5 rounded-full text-[11.5px] whitespace-nowrap transition shadow-xs">
+                <button onclick="selectSubFilter('${sub}')" class="sub-chip ${currentSub === sub ? 'active' : 'bg-white/90 text-[#284657] border-slate-200'} border px-2.5 py-1 rounded-full text-[11.5px] font-bold whitespace-nowrap transition">
                     ${sub}
                 </button>
             `).join('');
@@ -945,7 +1294,118 @@
             renderCards();
         }
 
-        // 장소 카드 & 간편목록 렌더링
+        // 공통 장소 아이템 HTML 생성 (사진카드 모드 & 간편목록 모드 모두 지원)
+        function buildPlaceItemHtml(place, idx, customDistLabel) {
+            const links = getLinks(place);
+            const fallback = getFallbackImg(place.name);
+            const timeOrDist = customDistLabel || getJaraTime(place);
+
+            // [간편목록 모드]
+            if (viewMode === 'list') {
+                return `
+                <article onclick="openDetailModal(${place.id})" class="card-anim bg-white/92 backdrop-blur-md rounded-2xl border border-white/90 shadow-sm px-2.5 py-2.5 flex items-center justify-between gap-2 cursor-pointer hover:border-[#f06a1a] transition">
+                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                        <span class="min-w-[22px] h-5 px-1 rounded-md bg-[#f06a1a] text-white text-[11px] font-extrabold flex items-center justify-center flex-shrink-0">${idx + 1}</span>
+                        <div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                            <h4 class="font-bold text-[#122b3a] text-[13px] leading-snug">${place.name}</h4>
+                            <span class="text-[10.5px] font-bold text-[#d4550a] bg-[#fff4ed] border border-orange-200/80 px-1.5 py-0.5 rounded whitespace-nowrap leading-none">${timeOrDist}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
+                        <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#03C75A] text-white text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
+                            네이버지도
+                        </a>
+                        <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#FEE500] text-[#191919] text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
+                            카카오맵
+                        </a>
+                        <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#1d2d44] text-white text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
+                            네이버검색
+                        </a>
+                    </div>
+                </article>
+                `;
+            }
+
+            // [사진카드 모드 - 네이처 글래스 화이트 카드 스타일]
+            return `
+            <article onclick="openDetailModal(${place.id})" class="card-anim bg-white/92 backdrop-blur-md rounded-[24px] border border-white/90 shadow-[0_8px_22px_rgba(15,45,65,0.1)] overflow-hidden cursor-pointer hover:border-[#f06a1a] transition">
+                <!-- 상단 이미지 + 배지 -->
+                <div class="relative h-44 bg-slate-100">
+                    <img src="${place.img}" alt="${place.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}';" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"></div>
+                    <span class="absolute top-3 left-3 bg-[#f06a1a] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-full shadow-sm">
+                        ${customDistLabel ? customDistLabel : place.badge}
+                    </span>
+                    <span class="absolute bottom-2 right-2.5 bg-black/55 backdrop-blur-xs text-white/95 text-[10px] px-2 py-0.5 rounded-md">
+                        참고 이미지 (실제와 다를 수 있음)
+                    </span>
+                </div>
+
+                <!-- 본문 화이트 카드 영역 (목업 하단 카드 디자인 매칭) -->
+                <div class="p-4 space-y-2.5">
+                    <div>
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <div class="flex items-center gap-2 min-w-0">
+                                <h4 class="font-extrabold text-[#102636] text-[17px] leading-snug">${place.name}</h4>
+                                <span class="text-[10.5px] font-extrabold text-[#166547] bg-[#dff5eb] px-2.5 py-0.5 rounded-full flex-shrink-0">${place.sub}</span>
+                            </div>
+                        </div>
+                        <p class="text-[12.5px] text-[#354f60] mt-1.5 leading-relaxed">${place.summary}</p>
+                    </div>
+
+                    <!-- 이용 포인트 박스 -->
+                    <div class="bg-[#fff5ed] border border-[#fedac0] rounded-2xl px-3.5 py-2.5 text-[11.5px] text-[#3b4e5c] leading-relaxed">
+                        <div class="flex items-center gap-1.5 font-extrabold text-[#e05d10] mb-0.5">
+                            <i class="fa-regular fa-lightbulb text-xs"></i>
+                            <span>이용 포인트</span>
+                        </div>
+                        <p>${place.tip}</p>
+                    </div>
+
+                    <!-- 주소 & 전화번호 -->
+                    <div class="px-1 pt-0.5 text-[12px] text-[#334e5e] space-y-1.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="truncate"><b class="text-[#647d8c] font-bold mr-2">주소</b>${place.addr}</span>
+                            <button onclick="copyAddress('${place.addr.replace(/'/g, "\\'")}', event)" class="text-[11.5px] text-[#f06a1a] font-extrabold flex-shrink-0 inline-flex items-center gap-1">
+                                <i class="fa-regular fa-copy text-[11px]"></i>복사
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                            <span><b class="text-[#647d8c] font-bold mr-2">전화</b><span class="font-semibold text-[#152e3d]">${place.tel}</span></span>
+                            <a href="tel:${place.tel}" onclick="event.stopPropagation()" class="text-[11.5px] text-[#e05d10] font-extrabold flex-shrink-0 inline-flex items-center gap-1">
+                                <i class="fa-solid fa-phone text-[10px]"></i>바로통화
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 땡큐캠핑 전용 예약/정보 바로가기 (캠핑장 전용) -->
+                    ${links.tqLink ? `
+                    <a href="${links.tqLink}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="block w-full py-2.5 rounded-full bg-[#f06a1a] hover:bg-[#d4550a] text-white text-center text-xs font-extrabold shadow-sm transition">
+                        땡큐캠핑 실시간 예약 · 상세정보 바로가기
+                    </a>
+                    ` : ''}
+
+                    <!-- 네이버지도 · 카카오맵 · 네이버검색 필(Pill) 버튼 -->
+                    <div class="grid grid-cols-3 gap-2 pt-1" onclick="event.stopPropagation()">
+                        <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="py-2.5 rounded-full bg-[#15c45a] hover:bg-[#0fb04f] text-white text-[11.5px] font-extrabold text-center shadow-xs flex items-center justify-center gap-1">
+                            <span class="bg-white text-[#15c45a] text-[9px] font-black px-1 rounded-xs leading-tight">N</span>
+                            <span>네이버지도</span>
+                        </a>
+                        <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="py-2.5 rounded-full bg-[#FEE500] hover:bg-[#f5dc00] text-[#191919] text-[11.5px] font-extrabold text-center shadow-xs flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-location-dot text-[11px]"></i>
+                            <span>카카오맵</span>
+                        </a>
+                        <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="py-2.5 rounded-full bg-[#1e2d45] hover:bg-[#142033] text-white text-[11.5px] font-extrabold text-center shadow-xs flex items-center justify-center gap-1">
+                            <i class="fa-solid fa-magnifying-glass text-[10px]"></i>
+                            <span>네이버검색</span>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            `;
+        }
+
+        // 카테고리 뷰 렌더링
         function renderCards() {
             const container = document.getElementById('cardsContainer');
             const filtered = PLACES.filter(item => {
@@ -955,105 +1415,202 @@
             });
 
             document.getElementById('resultCountBadge').textContent = `총 ${filtered.length}곳`;
+            renderHeroCarousel(filtered);
+            container.innerHTML = filtered.map((place, idx) => buildPlaceItemHtml(place, idx, null)).join('');
+        }
 
-            // [간편목록 모드] 사진 없이 가로 한 줄 형태 (순번 · 명칭 · 자라섬 소요시간 · 네이버지도 · 카카오맵 · 네이버검색)
-            if (viewMode === 'list') {
-                container.innerHTML = filtered.map((place, idx) => {
-                    const links = getLinks(place);
-                    const jaraTime = getJaraTime(place);
-                    return `
-                    <article onclick="openDetailModal(${place.id})" class="card-anim bg-white/95 backdrop-blur-xs rounded-xl border border-gray-200/90 shadow-xs px-2.5 py-2.5 flex items-center justify-between gap-2 cursor-pointer hover:border-[#f06a1a] transition">
-                        <div class="flex items-center gap-2 min-w-0 flex-1">
-                            <span class="min-w-[22px] h-5 px-1 rounded-md bg-[#f06a1a] text-white text-[11px] font-extrabold flex items-center justify-center flex-shrink-0">${idx + 1}</span>
-                            <div class="min-w-0 flex-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
-                                <h4 class="font-bold text-gray-900 text-[13px] leading-snug">${place.name}</h4>
-                                <span class="text-[10.5px] font-bold text-[#d4550a] bg-[#fff4ed] border border-orange-200/80 px-1.5 py-0.5 rounded whitespace-nowrap leading-none">${jaraTime}</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
-                            <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#03C75A] text-white text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
-                                네이버지도
-                            </a>
-                            <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-[#FEE500] text-[#191919] text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
-                                카카오맵
-                            </a>
-                            <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="px-1.5 py-1.5 rounded-lg bg-gray-800 text-white text-[10.5px] font-extrabold whitespace-nowrap leading-none shadow-xs">
-                                네이버검색
-                            </a>
-                        </div>
-                    </article>
-                    `;
-                }).join('');
+        // ================= 내 주변 (위치기반 우리 페이지 101곳 전용 탐색) =================
+        const NEARBY_CATS = [
+            { key: 'all', label: '전체(101)', color: '#f06a1a' },
+            { key: 'food', label: '대표맛집(24)', color: '#e11d48' },
+            { key: 'camp', label: '캠핑장(18)', color: '#ea580c' },
+            { key: 'eight', label: '가평8경(8)', color: '#0284c7' },
+            { key: 'tour', label: '관광·문화(18)', color: '#7c3aed' },
+            { key: 'valley', label: '계곡(11)', color: '#0891b2' },
+            { key: 'nature', label: '명산·숲(13)', color: '#15803d' },
+            { key: 'exp', label: '체험·정보(9)', color: '#b45309' }
+        ];
+
+        function getCatPinColor(cat) {
+            const found = NEARBY_CATS.find(c => c.key === cat);
+            return found ? found.color : '#f06a1a';
+        }
+
+        function initNearbyView() {
+            renderNearbyCatChips();
+            ensureLeafletMap();
+            requestUserLocation(true);
+        }
+
+        function renderNearbyCatChips() {
+            const container = document.getElementById('nearbyCatFilter');
+            if (!container) return;
+            container.innerHTML = NEARBY_CATS.map(c => `
+                <button onclick="selectNearbyCat('${c.key}')" class="sub-chip ${nearbyFilterCat === c.key ? 'active' : 'bg-white/90 text-[#284657] border-slate-200'} border px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap transition">
+                    ${c.label}
+                </button>
+            `).join('');
+        }
+
+        function selectNearbyCat(catKey) {
+            nearbyFilterCat = catKey;
+            renderNearbyCatChips();
+            renderNearbyList();
+            updateMapMarkers();
+        }
+
+        function ensureLeafletMap() {
+            if (typeof L === 'undefined') return;
+            if (!leafletMap) {
+                leafletMap = L.map('nearbyMap', {
+                    zoomControl: true,
+                    attributionControl: false
+                }).setView([nearbyCenter.lat, nearbyCenter.lng], 12);
+
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                    maxZoom: 18
+                }).addTo(leafletMap);
+
+                leafletMarkersLayer = L.layerGroup().addTo(leafletMap);
+            }
+            setTimeout(() => {
+                if (leafletMap) leafletMap.invalidateSize();
+                updateMapMarkers();
+            }, 120);
+        }
+
+        // 사용자 GPS 현재 위치 요청
+        function requestUserLocation(isAutoInit) {
+            const statusEl = document.getElementById('nearbyStatusText');
+            const btnGps = document.getElementById('btnLocGps');
+            const btnJara = document.getElementById('btnLocJara');
+
+            if (!navigator.geolocation) {
+                useJarasumCenter('이 기기에서 위치 기능을 지원하지 않아 자라섬 캠핑장 기준으로 표시합니다.');
                 return;
             }
 
-            // [사진카드 모드] 기존 상세 리플릿 카드 유지
-            container.innerHTML = filtered.map(place => {
+            if (statusEl) statusEl.textContent = '현재 GPS 위치를 확인하고 있습니다...';
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const uLat = pos.coords.latitude;
+                    const uLng = pos.coords.longitude;
+                    const distFromJara = calcDistanceKm(uLat, uLng, JARASUM_COORDS.lat, JARASUM_COORDS.lng);
+
+                    // 자동 진입 시 가평권(35km 이내)이면 현재 위치 기준, 타 지역이면 자라섬 기준 안내(수동 클릭 시에는 무조건 내 위치 기준 적용)
+                    if (isAutoInit && distFromJara > 35) {
+                        useJarasumCenter('현재 가평 외부에 계셔서 자라섬 캠핑장 기준으로 가까운 곳을 보여줍니다.');
+                        return;
+                    }
+
+                    nearbyCenter = { lat: uLat, lng: uLng, mode: 'gps' };
+                    if (btnGps) btnGps.className = "py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-[#f06a1a] text-white border-[#f06a1a] shadow-xs";
+                    if (btnJara) btnJara.className = "py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-white text-[#1f3d4d] border-slate-200 hover:border-[#f06a1a]";
+                    if (statusEl) statusEl.textContent = '내 현재 GPS 위치에서 가장 가까운 리플릿 등록 장소 순입니다';
+
+                    updateExternalNearbyMapLinks(uLat, uLng, '내 현재 위치');
+                    renderNearbyList();
+                    updateMapMarkers(true);
+                },
+                () => {
+                    useJarasumCenter('위치 권한이 꺼져 있어 자라섬 캠핑장 기준으로 가까운 명소를 보여줍니다.');
+                },
+                { enableHighAccuracy: true, timeout: 5500, maximumAge: 60000 }
+            );
+        }
+
+        // 자라섬 캠핑장 중심 기준 전환
+        function useJarasumCenter(customMessage) {
+            nearbyCenter = { lat: JARASUM_COORDS.lat, lng: JARASUM_COORDS.lng, mode: 'jara' };
+            const statusEl = document.getElementById('nearbyStatusText');
+            const btnGps = document.getElementById('btnLocGps');
+            const btnJara = document.getElementById('btnLocJara');
+
+            if (btnJara) btnJara.className = "py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-[#f06a1a] text-white border-[#f06a1a] shadow-xs";
+            if (btnGps) btnGps.className = "py-2 px-2.5 rounded-xl text-[11.5px] font-extrabold border transition flex items-center justify-center gap-1.5 bg-white text-[#1f3d4d] border-slate-200 hover:border-[#f06a1a]";
+            if (statusEl) statusEl.textContent = customMessage || '자라섬 캠핑장에서 가장 가까운 리플릿 등록 장소 순입니다';
+
+            updateExternalNearbyMapLinks(JARASUM_COORDS.lat, JARASUM_COORDS.lng, '자라섬캠핑장');
+            renderNearbyList();
+            updateMapMarkers(true);
+        }
+
+        function updateExternalNearbyMapLinks(lat, lng, label) {
+            const naverBtn = document.getElementById('nearbyNaverMapBtn');
+            const kakaoBtn = document.getElementById('nearbyKakaoMapBtn');
+            if (naverBtn) {
+                naverBtn.href = nearbyCenter.mode === 'jara'
+                    ? `https://m.map.naver.com/search2/search.naver?query=${encodeURIComponent('가평 자라섬 주변 맛집 명소')}`
+                    : `https://m.map.naver.com/search2/search.naver?query=${encodeURIComponent('가평 맛집 관광지')}`;
+            }
+            if (kakaoBtn) {
+                kakaoBtn.href = `https://map.kakao.com/link/map/${encodeURIComponent(label)},${lat},${lng}`;
+            }
+        }
+
+        function getSortedNearbyPlaces() {
+            const list = PLACES.filter(p => nearbyFilterCat === 'all' ? true : p.cat === nearbyFilterCat);
+            return list.map(place => {
+                const coords = PLACE_COORDS[place.id] || [JARASUM_COORDS.lat, JARASUM_COORDS.lng];
+                const distKm = calcDistanceKm(nearbyCenter.lat, nearbyCenter.lng, coords[0], coords[1]);
+                return { place, coords, distKm };
+            }).sort((a, b) => a.distKm - b.distKm);
+        }
+
+        function updateMapMarkers(recenter) {
+            if (!leafletMap || !leafletMarkersLayer) return;
+            leafletMarkersLayer.clearLayers();
+
+            // 기준점 마커 (내 위치 또는 자라섬 캠핑장)
+            const centerHtml = `<div style="width:18px;height:18px;border-radius:9999px;background:#2563eb;border:3px solid #ffffff;box-shadow:0 0 0 5px rgba(37,99,235,0.28);"></div>`;
+            const centerIcon = L.divIcon({ html: centerHtml, className: '', iconSize: [18, 18], iconAnchor: [9, 9] });
+            userCenterMarker = L.marker([nearbyCenter.lat, nearbyCenter.lng], { icon: centerIcon })
+                .bindPopup(`<b>${nearbyCenter.mode === 'gps' ? '내 현재 위치' : '자라섬 캠핑장 (기준점)'}</b>`)
+                .addTo(leafletMarkersLayer);
+
+            // 본 리플릿 등록 장소 마커만 표시
+            const sorted = getSortedNearbyPlaces();
+            sorted.forEach(({ place, coords, distKm }) => {
+                const color = getCatPinColor(place.cat);
                 const links = getLinks(place);
-                const fallback = getFallbackImg(place.name);
-                return `
-                <article onclick="openDetailModal(${place.id})" class="card-anim bg-white/95 backdrop-blur-xs rounded-2xl border border-gray-200/90 shadow-sm overflow-hidden cursor-pointer hover:border-[#f06a1a] transition">
-                    <!-- 상단 이미지 + 배지 -->
-                    <div class="relative h-44 bg-gray-100">
-                        <img src="${place.img}" alt="${place.name}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}';" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <span class="absolute top-2.5 left-2.5 bg-[#f06a1a] text-white text-[11px] font-extrabold px-2.5 py-1 rounded-lg shadow-sm">
-                            ${place.badge}
-                        </span>
-                        <span class="absolute bottom-2 right-2.5 bg-black/55 backdrop-blur-xs text-white/95 text-[10px] px-2 py-0.5 rounded-md">
-                            참고 이미지 (실제와 다를 수 있음)
-                        </span>
-                    </div>
+                const distTxt = formatDistLabel(distKm);
+                const pinHtml = `<div style="width:14px;height:14px;border-radius:9999px;background:${color};border:2.5px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>`;
+                const pinIcon = L.divIcon({ html: pinHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
-                    <!-- 본문 구조화 영역 -->
-                    <div class="p-3.5 space-y-2.5">
-                        <div>
-                            <div class="flex items-center justify-between gap-2">
-                                <h4 class="font-extrabold text-gray-900 text-[16px] leading-snug">${place.name}</h4>
-                                <span class="text-[10px] font-bold text-[#d4550a] bg-[#fff4ed] px-2 py-0.5 rounded-md flex-shrink-0">${place.sub}</span>
-                            </div>
-                            <p class="text-xs text-gray-600 mt-1 leading-relaxed">${place.summary}</p>
-                        </div>
-
-                        <!-- 핵심 관람/이용 팁 -->
-                        <div class="bg-[#fff4ed]/80 border border-orange-100 rounded-xl px-3 py-2 text-[11.5px] text-gray-700 leading-relaxed">
-                            <b class="text-[#d4550a]">이용 포인트 :</b> ${place.tip}
-                        </div>
-
-                        <!-- 주소 & 전화번호 -->
-                        <div class="bg-gray-50 rounded-xl px-3 py-2 text-[11.5px] text-gray-600 space-y-1 border border-gray-100">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="truncate"><b class="text-gray-800">주소</b> ${place.addr}</span>
-                                <button onclick="copyAddress('${place.addr.replace(/'/g, "\\'")}', event)" class="text-[11px] text-[#f06a1a] font-bold flex-shrink-0 underline">복사</button>
-                            </div>
-                            <div class="flex items-center justify-between gap-2">
-                                <span><b class="text-gray-800">전화</b> ${place.tel}</span>
-                                <a href="tel:${place.tel}" onclick="event.stopPropagation()" class="text-[11px] text-emerald-700 font-extrabold flex-shrink-0">바로통화</a>
-                            </div>
-                        </div>
-
-                        <!-- 땡큐캠핑 전용 예약/정보 바로가기 (캠핑장 카테고리 전용) -->
-                        ${links.tqLink ? `
-                        <a href="${links.tqLink}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" class="block w-full py-2.5 rounded-xl bg-[#f06a1a] hover:bg-[#d4550a] text-white text-center text-xs font-extrabold shadow-xs transition">
-                            땡큐캠핑 실시간 예약 · 상세정보 바로가기
-                        </a>
-                        ` : ''}
-
-                        <!-- 주소 기준 지도 연동 & 네이버 상세검색 버튼 -->
-                        <div class="grid grid-cols-3 gap-1.5 pt-0.5" onclick="event.stopPropagation()">
-                            <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" class="py-2 rounded-xl bg-[#03C75A] text-white text-[11px] font-extrabold text-center shadow-xs">
-                                네이버지도
-                            </a>
-                            <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="py-2 rounded-xl bg-[#FEE500] text-[#191919] text-[11px] font-extrabold text-center shadow-xs">
-                                카카오맵
-                            </a>
-                            <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="py-2 rounded-xl bg-gray-800 text-white text-[11px] font-extrabold text-center shadow-xs">
-                                네이버검색
-                            </a>
+                const popupHtml = `
+                    <div style="min-width:175px;">
+                        <div style="font-size:10px;font-weight:800;color:${color};">${place.sub} · ${distTxt}</div>
+                        <div style="font-size:13.5px;font-weight:800;color:#102636;margin-top:2px;">${place.name}</div>
+                        <div style="display:flex;gap:4px;margin-top:8px;">
+                            <button onclick="openDetailModal(${place.id})" style="flex:1;background:#f06a1a;color:#fff;font-size:10.5px;font-weight:800;padding:5px 6px;border-radius:8px;">상세보기</button>
+                            <a href="${links.naverMap}" target="_blank" rel="noopener noreferrer" style="flex:1;background:#03C75A;color:#fff;font-size:10.5px;font-weight:800;padding:5px 6px;border-radius:8px;text-align:center;text-decoration:none;">N지도</a>
+                            <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" style="flex:1;background:#FEE500;color:#191919;font-size:10.5px;font-weight:800;padding:5px 6px;border-radius:8px;text-align:center;text-decoration:none;">카카오</a>
                         </div>
                     </div>
-                </article>
                 `;
+                L.marker([coords[0], coords[1]], { icon: pinIcon })
+                    .bindPopup(popupHtml)
+                    .addTo(leafletMarkersLayer);
+            });
+
+            if (recenter) {
+                leafletMap.setView([nearbyCenter.lat, nearbyCenter.lng], nearbyCenter.mode === 'jara' ? 12 : 12);
+            }
+        }
+
+        function renderNearbyList() {
+            const container = document.getElementById('nearbyCardsContainer');
+            const badge = document.getElementById('nearbyCountBadge');
+            if (!container) return;
+
+            const sorted = getSortedNearbyPlaces();
+            if (badge) badge.textContent = `총 ${sorted.length}곳`;
+
+            container.innerHTML = sorted.map(({ place, distKm }, idx) => {
+                const prefix = nearbyCenter.mode === 'gps' ? '내 위치 ' : '자라섬 ';
+                const label = `${prefix}${formatDistLabel(distKm)}`;
+                return buildPlaceItemHtml(place, idx, label);
             }).join('');
         }
 
@@ -1096,7 +1653,7 @@
                 <a href="${links.kakaoMap}" target="_blank" rel="noopener noreferrer" class="py-2.5 rounded-xl bg-[#FEE500] text-[#191919] font-extrabold text-center">
                     카카오맵 (주소검색)
                 </a>
-                <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="col-span-2 py-2.5 rounded-xl bg-gray-800 text-white font-extrabold text-center">
+                <a href="${links.naverInfo}" target="_blank" rel="noopener noreferrer" class="col-span-2 py-2.5 rounded-xl bg-[#1e2d45] text-white font-extrabold text-center">
                     네이버 플레이스 · 블로그 후기 보기
                 </a>
             `;
@@ -1116,8 +1673,9 @@
             document.getElementById('scheduleModal').classList.add('hidden');
         }
 
-        // 초기 실행: 캠핑장 랜덤 셔플 후 포스터형 메인 화면 표시
+        // 초기 실행
         window.onload = function() {
+            initHeaderWidgets();
             shuffleCampsites();
             selectCategory('home');
         };
