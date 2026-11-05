@@ -700,56 +700,15 @@
 
         <!-- 6. Camping School Schedule & Mission Stamp Modal -->
         <div id="scheduleModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onclick="closeScheduleModal(event)">
-            <div class="bg-white w-full max-w-[420px] rounded-3xl overflow-hidden shadow-2xl" onclick="event.stopPropagation()">
-                <div class="bg-[#1b6143] text-white p-4 flex items-center justify-between">
-                    <div>
-                        <span class="bg-[#f2a629] text-[#123d2a] text-[10px] font-extrabold px-2 py-0.5 rounded-full">2026 캠핑 아카데미</span>
-                        <h3 class="title-font text-lg mt-1">제1회 자라섬 캠핑스쿨 안내</h3>
-                    </div>
-                    <button onclick="closeScheduleModal()" class="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+            <div class="bg-white w-full max-w-[420px] max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative" onclick="event.stopPropagation()">
+                <button onclick="closeScheduleModal()" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/55 hover:bg-black/75 text-white flex items-center justify-center transition" aria-label="닫기">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="overflow-y-auto flex-1 bg-white">
+                    <img src="https://i.postimg.cc/LXN0TG0d/r-NIQ3v-Sd.jpg" alt="제1회 자라섬 캠핑스쿨 안내" class="w-full h-auto block object-contain">
                 </div>
-                <div class="p-4 space-y-3 text-xs">
-                    <div class="bg-[#1b6143]/5 border border-[#1b6143]/20 rounded-2xl p-3">
-                        <p class="font-extrabold text-[#1b6143] mb-2">미션 스탬프 (모두 모으면 소정의 선물 증정)</p>
-                        <div class="grid grid-cols-4 gap-1.5 text-center">
-                            <div class="bg-white rounded-xl py-2 px-1 border border-emerald-200">
-                                <span class="block text-[#d98414] font-black text-sm">01</span>
-                                <span class="text-[11px] font-bold text-gray-800">텐트피칭</span>
-                            </div>
-                            <div class="bg-white rounded-xl py-2 px-1 border border-emerald-200">
-                                <span class="block text-[#d98414] font-black text-sm">02</span>
-                                <span class="text-[11px] font-bold text-gray-800">안전교육</span>
-                            </div>
-                            <div class="bg-white rounded-xl py-2 px-1 border border-emerald-200">
-                                <span class="block text-[#d98414] font-black text-sm">03</span>
-                                <span class="text-[11px] font-bold text-gray-800">바비큐</span>
-                            </div>
-                            <div class="bg-white rounded-xl py-2 px-1 border border-emerald-200">
-                                <span class="block text-[#d98414] font-black text-sm">04</span>
-                                <span class="text-[11px] font-bold text-gray-800">클린철수</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-[#fff4ed] border border-orange-200 rounded-2xl p-3">
-                        <span class="inline-block bg-[#f06a1a] text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md mb-1">DAY 1 · 11월 7일(토)</span>
-                        <p class="font-bold text-gray-800">자라섬 오토캠핑장 입소 · 캠핑스쿨 미션 진행</p>
-                        <p class="text-gray-600 mt-1">텐트피칭 실습 · 안전교육 · 가족 바비큐 및 가을밤 감성 캠핑</p>
-                    </div>
-                    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-3">
-                        <span class="inline-block bg-amber-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md mb-1">DAY 2 · 11월 8일(일)</span>
-                        <p class="font-bold text-gray-800">클린철수 퇴소 후 · 가평 관광 & 먹거리 투어!</p>
-                        <p class="text-gray-600 mt-1">오전 11시 퇴소 → 자라섬 근접 맛집 점심 & 리버뷰 카페 → 주변 명소 관람 후 귀가</p>
-                    </div>
-
-                    <div class="bg-gray-50 rounded-xl p-2.5 text-[11px] text-gray-600 border border-gray-200 leading-relaxed">
-                        <div><b class="text-gray-800">장소 :</b> 경기 가평군 가평읍 자라섬로 60 (가평 자라섬 캠핑장)</div>
-                        <div><b class="text-gray-800">주최·주관 :</b> (주)하비비커뮤니케이션 / <b class="text-gray-800">운영본부 :</b> 010-7140-7798</div>
-                    </div>
-
-                    <button onclick="closeScheduleModal()" class="w-full py-2.5 bg-[#f06a1a] text-white font-extrabold rounded-xl">확인</button>
+                <div class="p-3 bg-white border-t border-gray-100 flex-shrink-0">
+                    <button onclick="closeScheduleModal()" class="w-full py-2.5 bg-[#f06a1a] hover:bg-[#d4550a] text-white text-xs font-extrabold rounded-xl transition">확인</button>
                 </div>
             </div>
         </div>
